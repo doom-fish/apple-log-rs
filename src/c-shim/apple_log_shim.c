@@ -40,3 +40,46 @@ void apple_log_emit_default(int level, const char *message) {
     os_log_type_t type = (os_log_type_t)level;
     os_log_with_type(OS_LOG_DEFAULT, type, "%{public}s", message);
 }
+
+// --- Type-enabled check (v0.2) ---
+
+bool apple_log_type_enabled(os_log_t log, int level) {
+    if (!log) log = OS_LOG_DEFAULT;
+    return os_log_type_enabled(log, (os_log_type_t)level);
+}
+
+// --- Signposts (v0.2) ---
+// os_signpost_id_t is uint64_t; OS_SIGNPOST_ID_INVALID = ~0ULL.
+
+#include <os/signpost.h>
+
+uint64_t apple_signpost_id_generate(os_log_t log) {
+    if (!log) log = OS_LOG_DEFAULT;
+    return (uint64_t)os_signpost_id_generate(log);
+}
+
+bool apple_signpost_enabled(os_log_t log) {
+    if (!log) log = OS_LOG_DEFAULT;
+    return os_signpost_enabled(log);
+}
+
+void apple_signpost_event_emit(os_log_t log, uint64_t spid, const char *name, const char *message) {
+    if (!log) log = OS_LOG_DEFAULT;
+    if (!name) name = "event";
+    // Constant strings only — Apple's macros bake the name in at compile
+    // time. We accept dynamic names by using %{public}s formatting.
+    os_signpost_event_emit(log, (os_signpost_id_t)spid, "rust", "%{public}s %{public}s",
+                            name, message ? message : "");
+}
+
+void apple_signpost_interval_begin(os_log_t log, uint64_t spid, const char *name) {
+    if (!log) log = OS_LOG_DEFAULT;
+    if (!name) name = "interval";
+    os_signpost_interval_begin(log, (os_signpost_id_t)spid, "rust", "%{public}s", name);
+}
+
+void apple_signpost_interval_end(os_log_t log, uint64_t spid, const char *name) {
+    if (!log) log = OS_LOG_DEFAULT;
+    if (!name) name = "interval";
+    os_signpost_interval_end(log, (os_signpost_id_t)spid, "rust", "%{public}s", name);
+}

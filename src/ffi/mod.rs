@@ -19,4 +19,17 @@ extern "C" {
     pub fn apple_log_release(log: os_log_t);
     pub fn apple_log_emit(log: os_log_t, level: i32, message: *const c_char);
     pub fn apple_log_emit_default(level: i32, message: *const c_char);
+
+    pub fn apple_log_type_enabled(log: os_log_t, level: i32) -> bool;
+
+    pub fn apple_signpost_id_generate(log: os_log_t) -> u64;
+    pub fn apple_signpost_enabled(log: os_log_t) -> bool;
+    pub fn apple_signpost_event_emit(
+        log: os_log_t,
+        spid: u64,
+        name: *const c_char,
+        message: *const c_char,
+    );
+    pub fn apple_signpost_interval_begin(log: os_log_t, spid: u64, name: *const c_char);
+    pub fn apple_signpost_interval_end(log: os_log_t, spid: u64, name: *const c_char);
 }
