@@ -32,4 +32,6 @@ extern "C" {
     );
     pub fn apple_signpost_interval_begin(log: os_log_t, spid: u64, name: *const c_char);
     pub fn apple_signpost_interval_end(log: os_log_t, spid: u64, name: *const c_char);
+
+    pub fn apple_activity_get_active_id() -> u64;
 }

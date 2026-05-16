@@ -155,6 +155,13 @@ impl SignpostId {
     }
 }
 
+/// Return the id of the currently-active `os_activity` (0 if none).
+/// Useful for correlating log messages within an activity scope.
+#[must_use]
+pub fn active_activity_id() -> u64 {
+    unsafe { ffi::apple_activity_get_active_id() }
+}
+
 /// Emit `message` at the requested `level` via `OS_LOG_DEFAULT` (the
 /// catch-all process logger — no subsystem / category).
 ///

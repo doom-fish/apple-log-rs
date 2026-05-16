@@ -83,3 +83,19 @@ void apple_signpost_interval_end(os_log_t log, uint64_t spid, const char *name) 
     if (!name) name = "interval";
     os_signpost_interval_end(log, (os_signpost_id_t)spid, "rust", "%{public}s", name);
 }
+
+// --- Activity (v0.3) ---
+// Apple's full os_activity_scope_state_s requires per-scope state on
+// the caller's stack which doesn't bridge cleanly to Rust drop order.
+// We expose only the readable id of the currently-active activity —
+// that's enough to thread an activity id through logs without
+// risking incorrect scope nesting.
+
+#include <os/activity.h>
+
+/// Return the integer id of the currently-active activity (0 if none).
+/// Useful for stamping log messages with an activity correlation id.
+uint64_t apple_activity_get_active_id(void) {
+    return (uint64_t)os_activity_get_identifier(
+        OS_ACTIVITY_CURRENT, NULL);
+}
