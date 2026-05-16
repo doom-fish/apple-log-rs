@@ -157,11 +157,24 @@ extern "C" {
     ) -> *mut c_void;
     pub(crate) fn apple_log_os_activity_current() -> *mut c_void;
     pub(crate) fn apple_log_os_activity_none() -> *mut c_void;
+    pub(crate) fn apple_log_os_activity_null() -> *mut c_void;
     pub(crate) fn apple_log_os_activity_release(activity: *mut c_void);
     pub(crate) fn apple_log_os_activity_get_identifier(
         activity: *mut c_void,
         parent_out: *mut u64,
     ) -> u64;
+    pub(crate) fn apple_log_os_activity_initiate(
+        description: *const c_char,
+        flags: u32,
+        context: *mut c_void,
+        function: Option<unsafe extern "C" fn(*mut c_void)>,
+    );
+    pub(crate) fn apple_log_os_activity_initiate_f(
+        description: *const c_char,
+        flags: u32,
+        context: *mut c_void,
+        function: Option<unsafe extern "C" fn(*mut c_void)>,
+    );
     pub(crate) fn apple_log_os_activity_apply(
         activity: *mut c_void,
         context: *mut c_void,

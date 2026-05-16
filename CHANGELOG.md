@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.5.1] - 2026-05-16
+
+### Added
+
+- `OSActivity::null()` for the explicit `OS_ACTIVITY_NULL` sentinel.
+- `OSActivity::{initiate, initiate_f}` convenience helpers for `os_activity_initiate` and `os_activity_initiate_f`.
+
+### Changed
+
+- `COVERAGE.md` and `COVERAGE_AUDIT.md` now mark the remaining `os/activity.h` gaps as implemented.
+- The OSActivity example and smoke tests now exercise the null sentinel plus initiate helpers.
+
 ## [0.5.0] - 2026-05-16
 
 ### Added

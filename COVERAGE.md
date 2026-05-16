@@ -1,4 +1,4 @@
-# apple-log v0.5.0 coverage audit
+# apple-log v0.5.1 coverage audit
 
 Reference inputs:
 
@@ -134,11 +134,12 @@ Legend:
 
 | API | Status | Notes |
 | --- | --- | --- |
-| `OS_ACTIVITY_CURRENT` / `OS_ACTIVITY_NONE` | ✅ | `OSActivity::{current,none}` |
+| `OS_ACTIVITY_CURRENT` / `OS_ACTIVITY_NONE` / `OS_ACTIVITY_NULL` | ✅ | `OSActivity::{current,none,null}` |
 | `OS_ACTIVITY_FLAG_DEFAULT` | ✅ | `OSActivityFlags::DEFAULT` |
 | `OS_ACTIVITY_FLAG_DETACHED` | ✅ | `OSActivityFlags::DETACHED` |
 | `OS_ACTIVITY_FLAG_IF_NONE_PRESENT` | ✅ | `OSActivityFlags::IF_NONE_PRESENT` |
 | `os_activity_create` | ✅ | `OSActivity::new` |
+| `os_activity_initiate` / `os_activity_initiate_f` | ✅ | `OSActivity::{initiate,initiate_f}` |
 | `os_activity_apply` / `os_activity_apply_f` | ✅ | `OSActivity::apply` |
 | `os_activity_scope_enter` / `os_activity_scope_leave` | ✅ | `OSActivity::enter` + `OSActivityScope` |
 | `os_activity_get_identifier` | ✅ | `OSActivity::identifiers` / `active_activity_ids` |

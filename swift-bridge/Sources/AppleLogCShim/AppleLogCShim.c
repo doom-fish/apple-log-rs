@@ -27,12 +27,24 @@ typedef struct apple_atomic_fifo_node_s {
 
 extern void os_release(void *object);
 
+#define APPLE_ACTIVITY_NULL_SENTINEL ((apple_activity_handle_t)(uintptr_t)1)
+
+static bool apple_is_null_activity(apple_activity_handle_t activity) {
+    return activity == APPLE_ACTIVITY_NULL_SENTINEL;
+}
+
 static os_log_t apple_resolve_log(apple_log_handle_t log) {
     return log ? (os_log_t)log : OS_LOG_DEFAULT;
 }
 
 static os_activity_t apple_resolve_activity(apple_activity_handle_t activity) {
-    return activity ? (os_activity_t)activity : OS_ACTIVITY_CURRENT;
+    if (!activity) {
+        return OS_ACTIVITY_CURRENT;
+    }
+    if (apple_is_null_activity(activity)) {
+        return OS_ACTIVITY_NULL;
+    }
+    return (os_activity_t)activity;
 }
 
 apple_log_handle_t apple_log_create(const char *subsystem, const char *category) {
@@ -143,38 +155,74 @@ apple_activity_handle_t apple_activity_none(void) {
     return (apple_activity_handle_t)OS_ACTIVITY_NONE;
 }
 
+apple_activity_handle_t apple_activity_null(void) {
+    return APPLE_ACTIVITY_NULL_SENTINEL;
+}
+
 void apple_activity_release(apple_activity_handle_t activity) {
-    if (!activity || activity == (apple_activity_handle_t)OS_ACTIVITY_CURRENT || activity == (apple_activity_handle_t)OS_ACTIVITY_NONE) {
+    if (!activity || apple_is_null_activity(activity) || activity == (apple_activity_handle_t)OS_ACTIVITY_CURRENT || activity == (apple_activity_handle_t)OS_ACTIVITY_NONE) {
         return;
     }
     os_release(activity);
+}
+
+void apple_activity_initiate_f(const char *description, uint32_t flags, void *context, apple_log_function_t function) {
+    if (!function) {
+        return;
+    }
+    _os_activity_initiate_f(&__dso_handle, description ? description : "activity", (os_activity_flag_t)flags, context, (os_function_t)function);
 }
 
 void apple_activity_apply_f(apple_activity_handle_t activity, void *context, apple_log_function_t function) {
     if (!function) {
         return;
     }
+    if (apple_is_null_activity(activity)) {
+        function(context);
+        return;
+    }
     os_activity_apply_f(apple_resolve_activity(activity), context, (os_function_t)function);
 }
 
+typedef struct apple_activity_scope_box_s {
+    bool uses_scope;
+    struct os_activity_scope_state_s state;
+} apple_activity_scope_box_t;
+
 apple_activity_scope_handle_t apple_activity_scope_enter_alloc(apple_activity_handle_t activity) {
-    struct os_activity_scope_state_s *state = malloc(sizeof(struct os_activity_scope_state_s));
-    if (!state) {
+    apple_activity_scope_box_t *box = malloc(sizeof(*box));
+    if (!box) {
         return NULL;
     }
-    os_activity_scope_enter(apple_resolve_activity(activity), state);
-    return (apple_activity_scope_handle_t)state;
+    if (apple_is_null_activity(activity)) {
+        box->uses_scope = false;
+        memset(&box->state, 0, sizeof(box->state));
+        return (apple_activity_scope_handle_t)box;
+    }
+    box->uses_scope = true;
+    os_activity_scope_enter(apple_resolve_activity(activity), &box->state);
+    return (apple_activity_scope_handle_t)box;
 }
 
 void apple_activity_scope_leave_free(apple_activity_scope_handle_t state) {
-    if (!state) {
+    apple_activity_scope_box_t *box = (apple_activity_scope_box_t *)state;
+    if (!box) {
         return;
     }
-    os_activity_scope_leave((os_activity_scope_state_t)state);
-    free(state);
+    if (box->uses_scope) {
+        os_activity_scope_leave(&box->state);
+    }
+    free(box);
 }
 
 uint64_t apple_activity_get_identifier(apple_activity_handle_t activity, uint64_t *parent_id) {
+    if (apple_is_null_activity(activity)) {
+        if (parent_id) {
+            *parent_id = 0;
+        }
+        return 0;
+    }
+
     os_activity_id_t parent = 0;
     os_activity_id_t current = os_activity_get_identifier(apple_resolve_activity(activity), parent_id ? &parent : NULL);
     if (parent_id) {
@@ -184,7 +232,7 @@ uint64_t apple_activity_get_identifier(apple_activity_handle_t activity, uint64_
 }
 
 void apple_activity_end(apple_activity_handle_t activity) {
-    if (activity) {
+    if (activity && !apple_is_null_activity(activity)) {
         os_activity_end((os_activity_t)activity);
     }
 }

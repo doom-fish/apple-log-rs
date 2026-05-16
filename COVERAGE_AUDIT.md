@@ -1,10 +1,10 @@
 # apple-log coverage audit (vs MacOSX26.2.sdk)
 
 SDK_PUBLIC_SYMBOLS: 53
-VERIFIED: 50
-GAPS: 3
+VERIFIED: 53
+GAPS: 0
 EXEMPT: 9
-COVERAGE_PCT: 94.34%
+COVERAGE_PCT: 100.00%
 
 Scope notes:
 - Counted documented macro entrypoints and macro constants alongside typedefs and exported functions because `os/log.h`, `os/signpost.h`, and `os/activity.h` expose much of their public surface that way.
@@ -54,10 +54,13 @@ Scope notes:
 | `OS_ACTIVITY_FLAG_IF_NONE_PRESENT` | enum constant | `usr/include/os/activity.h` | `OSActivityFlags::IF_NONE_PRESENT` |
 | `os_activity_t` | typedef | `usr/include/os/activity.h` | `OSActivity` |
 | `OS_ACTIVITY_NONE` | macro constant | `usr/include/os/activity.h` | `OSActivity::none()` |
+| `OS_ACTIVITY_NULL` | macro constant | `usr/include/os/activity.h` | `OSActivity::null()` |
 | `OS_ACTIVITY_CURRENT` | macro constant | `usr/include/os/activity.h` | `OSActivity::current()` |
 | `os_activity_id_t` | typedef | `usr/include/os/activity.h` | `ActivityIds`, `OSActivity::identifier()` |
 | `os_activity_scope_state_t` | struct typedef | `usr/include/os/activity.h` | `OSActivityScope` |
 | `os_activity_create` | macro | `usr/include/os/activity.h` | `OSActivity::new()` |
+| `os_activity_initiate` | macro | `usr/include/os/activity.h` | `OSActivity::initiate()` |
+| `os_activity_initiate_f` | macro | `usr/include/os/activity.h` | `OSActivity::initiate_f()` |
 | `os_activity_apply` | function | `usr/include/os/activity.h` | `OSActivity::apply()` |
 | `os_activity_apply_f` | function | `usr/include/os/activity.h` | `OSActivity::apply()` |
 | `os_activity_scope_enter` | function | `usr/include/os/activity.h` | `OSActivity::enter()` |
@@ -67,11 +70,7 @@ Scope notes:
 | `os_activity_label_useraction` | macro | `usr/include/os/activity.h` | `OSActivity::label_user_action()` |
 
 ## 🔴 GAPS
-| Symbol | Kind | Header | Notes |
-| --- | --- | --- | --- |
-| `OS_ACTIVITY_NULL` | macro constant | `usr/include/os/activity.h` | No explicit Rust sentinel for the null activity. `OSActivity::new(..., None, ...)` resolves to `OS_ACTIVITY_CURRENT`, not `OS_ACTIVITY_NULL`. |
-| `os_activity_initiate` | macro | `usr/include/os/activity.h` | Can be composed with `OSActivity::new(...)?` + `OSActivity::apply(...)`, but the crate has no one-call equivalent for the documented convenience macro. |
-| `os_activity_initiate_f` | macro | `usr/include/os/activity.h` | Same functional gap as `os_activity_initiate`: no dedicated initiate-and-run helper for the function-pointer form. |
+None.
 
 ## ⏭️ EXEMPT
 | Symbol | Kind | Header | Reason | SDK attribute |

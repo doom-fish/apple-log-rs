@@ -37,7 +37,9 @@ apple_activity_handle_t apple_activity_create(const char *description, apple_act
 apple_activity_handle_t apple_activity_start(const char *description, uint32_t flags);
 apple_activity_handle_t apple_activity_current(void);
 apple_activity_handle_t apple_activity_none(void);
+apple_activity_handle_t apple_activity_null(void);
 void apple_activity_release(apple_activity_handle_t activity);
+void apple_activity_initiate_f(const char *description, uint32_t flags, void *context, apple_log_function_t function);
 void apple_activity_apply_f(apple_activity_handle_t activity, void *context, apple_log_function_t function);
 apple_activity_scope_handle_t apple_activity_scope_enter_alloc(apple_activity_handle_t activity);
 void apple_activity_scope_leave_free(apple_activity_scope_handle_t state);

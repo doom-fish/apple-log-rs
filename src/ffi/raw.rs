@@ -43,7 +43,14 @@ extern "C" {
     pub fn apple_activity_start(description: *const c_char, flags: u32) -> os_activity_t;
     pub fn apple_activity_current() -> os_activity_t;
     pub fn apple_activity_none() -> os_activity_t;
+    pub fn apple_activity_null() -> os_activity_t;
     pub fn apple_activity_release(activity: os_activity_t);
+    pub fn apple_activity_initiate_f(
+        description: *const c_char,
+        flags: u32,
+        context: *mut c_void,
+        function: Option<unsafe extern "C" fn(*mut c_void)>,
+    );
     pub fn apple_activity_apply_f(
         activity: os_activity_t,
         context: *mut c_void,

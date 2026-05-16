@@ -66,6 +66,12 @@ struct ApplyContext<F> {
     panic: Option<Box<dyn std::any::Any + Send>>,
 }
 
+struct ApplyWithContext<C, F> {
+    context: *mut C,
+    function: Option<F>,
+    panic: Option<Box<dyn std::any::Any + Send>>,
+}
+
 unsafe extern "C" fn apply_trampoline<F>(context: *mut c_void)
 where
     F: FnOnce(),
@@ -80,8 +86,26 @@ where
     }
 }
 
+unsafe extern "C" fn apply_with_context_trampoline<C, F>(context: *mut c_void)
+where
+    F: FnOnce(&mut C),
+{
+    let context = &mut *context.cast::<ApplyWithContext<C, F>>();
+    let function = context
+        .function
+        .take()
+        .expect("OSActivity apply_with_context trampoline called at most once");
+    let value = &mut *context.context;
+    if let Err(panic) = catch_unwind(AssertUnwindSafe(|| function(value))) {
+        context.panic = Some(panic);
+    }
+}
+
 impl OSActivity {
     /// Creates a new activity.
+    ///
+    /// Pass `None` to use `OS_ACTIVITY_CURRENT`, or `Some(&OSActivity::null())`
+    /// to pass the explicit `OS_ACTIVITY_NULL` sentinel.
     ///
     /// # Errors
     ///
@@ -116,6 +140,72 @@ impl OSActivity {
         Ok(Self { ptr })
     }
 
+    /// Synchronously initiates an activity around a closure.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the description contains a NUL byte.
+    pub fn initiate<F>(
+        description: &str,
+        flags: OSActivityFlags,
+        closure: F,
+    ) -> Result<(), LogError>
+    where
+        F: FnOnce(),
+    {
+        let description = c_string_arg("description", description)?;
+        let mut context = ApplyContext {
+            closure: Some(closure),
+            panic: None,
+        };
+        unsafe {
+            ffi::apple_log_os_activity_initiate(
+                description.as_ptr(),
+                flags.bits(),
+                std::ptr::addr_of_mut!(context).cast(),
+                Some(apply_trampoline::<F>),
+            );
+        }
+        if let Some(panic) = context.panic {
+            resume_unwind(panic);
+        }
+        Ok(())
+    }
+
+    /// Synchronously initiates an activity and passes a mutable context value to the callback.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the description contains a NUL byte.
+    pub fn initiate_f<C, F>(
+        description: &str,
+        flags: OSActivityFlags,
+        context: &mut C,
+        function: F,
+    ) -> Result<(), LogError>
+    where
+        F: FnOnce(&mut C),
+    {
+        let description = c_string_arg("description", description)?;
+        let mut bridge_context = ApplyWithContext {
+            context: std::ptr::from_mut(context),
+            function: Some(function),
+            panic: None,
+        };
+        unsafe {
+            ffi::apple_log_os_activity_initiate_f(
+                description.as_ptr(),
+                flags.bits(),
+                std::ptr::addr_of_mut!(bridge_context).cast(),
+                Some(apply_with_context_trampoline::<C, F>),
+            );
+        }
+        if let Some(panic) = bridge_context.panic {
+            resume_unwind(panic);
+        }
+        Ok(())
+    }
+
     #[must_use]
     pub fn current() -> Self {
         Self {
@@ -133,9 +223,18 @@ impl OSActivity {
     }
 
     #[must_use]
+    pub fn null() -> Self {
+        Self {
+            ptr: NonNull::new(unsafe { ffi::apple_log_os_activity_null() })
+                .expect("Swift bridge never returns NULL for OSActivity.null"),
+        }
+    }
+
+    #[must_use]
     pub fn identifiers(&self) -> ActivityIds {
         let mut parent = 0_u64;
-        let current = unsafe { ffi::apple_log_os_activity_get_identifier(self.ptr.as_ptr(), &mut parent) };
+        let current =
+            unsafe { ffi::apple_log_os_activity_get_identifier(self.ptr.as_ptr(), &mut parent) };
         ActivityIds {
             current,
             parent: (parent != 0).then_some(parent),
@@ -173,8 +272,9 @@ impl OSActivity {
     ///
     /// Returns an error if the bridge cannot allocate scope state.
     pub fn enter(&self) -> Result<OSActivityScope, LogError> {
-        let ptr = NonNull::new(unsafe { ffi::apple_log_os_activity_scope_enter(self.ptr.as_ptr()) })
-            .ok_or_else(|| LogError::bridge("OSActivity::enter returned NULL"))?;
+        let ptr =
+            NonNull::new(unsafe { ffi::apple_log_os_activity_scope_enter(self.ptr.as_ptr()) })
+                .ok_or_else(|| LogError::bridge("OSActivity::enter returned NULL"))?;
         Ok(OSActivityScope { ptr })
     }
 

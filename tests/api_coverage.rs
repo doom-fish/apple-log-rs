@@ -73,9 +73,12 @@ fn activity_symbols_present_in_header() {
     for sym in &[
         "OS_ACTIVITY_CURRENT",
         "OS_ACTIVITY_NONE",
+        "OS_ACTIVITY_NULL",
         "OS_ACTIVITY_FLAG_DEFAULT",
         "OS_ACTIVITY_FLAG_DETACHED",
         "OS_ACTIVITY_FLAG_IF_NONE_PRESENT",
+        "os_activity_initiate",
+        "os_activity_initiate_f",
         "os_activity_apply_f",
         "os_activity_scope_enter",
         "os_activity_scope_leave",
@@ -109,7 +112,7 @@ fn os_atomic_symbols_present_in_header() {
 #[test]
 fn rust_constants_match_apple_values() {
     use apple_log::{
-        Level, SignpostId, CATEGORY_DYNAMIC_STACK_TRACING, CATEGORY_DYNAMIC_TRACING,
+        Level, OSActivity, SignpostId, CATEGORY_DYNAMIC_STACK_TRACING, CATEGORY_DYNAMIC_TRACING,
         CATEGORY_POINTS_OF_INTEREST,
     };
 
@@ -126,6 +129,9 @@ fn rust_constants_match_apple_values() {
     assert_eq!(CATEGORY_POINTS_OF_INTEREST, "PointsOfInterest");
     assert_eq!(CATEGORY_DYNAMIC_TRACING, "DynamicTracing");
     assert_eq!(CATEGORY_DYNAMIC_STACK_TRACING, "DynamicStackTracing");
+
+    let null_activity = OSActivity::null();
+    assert_eq!(null_activity.identifiers().current, 0);
 
     let _ = BTreeSet::<u64>::new();
 }

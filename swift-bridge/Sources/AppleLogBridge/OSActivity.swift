@@ -57,6 +57,11 @@ public func appleLogOSActivityNone() -> UnsafeMutableRawPointer {
     retainObject(BridgeOSActivityBox(raw: apple_activity_none(), owned: false))
 }
 
+@_cdecl("apple_log_os_activity_null")
+public func appleLogOSActivityNull() -> UnsafeMutableRawPointer {
+    retainObject(BridgeOSActivityBox(raw: apple_activity_null(), owned: false))
+}
+
 @_cdecl("apple_log_os_activity_release")
 public func appleLogOSActivityRelease(_ activity: UnsafeMutableRawPointer?) {
     releaseObject(activity)
@@ -69,6 +74,32 @@ public func appleLogOSActivityGetIdentifier(
 ) -> UInt64 {
     let box: BridgeOSActivityBox? = takeObject(activity)
     return apple_activity_get_identifier(box?.raw, parentOut)
+}
+
+@_cdecl("apple_log_os_activity_initiate")
+public func appleLogOSActivityInitiate(
+    _ description: UnsafePointer<CChar>?,
+    _ flags: UInt32,
+    _ context: UnsafeMutableRawPointer?,
+    _ function: (@convention(c) (UnsafeMutableRawPointer?) -> Void)?
+) {
+    guard let function else {
+        return
+    }
+    apple_activity_initiate_f(description, flags, context, function)
+}
+
+@_cdecl("apple_log_os_activity_initiate_f")
+public func appleLogOSActivityInitiateF(
+    _ description: UnsafePointer<CChar>?,
+    _ flags: UInt32,
+    _ context: UnsafeMutableRawPointer?,
+    _ function: (@convention(c) (UnsafeMutableRawPointer?) -> Void)?
+) {
+    guard let function else {
+        return
+    }
+    apple_activity_initiate_f(description, flags, context, function)
 }
 
 @_cdecl("apple_log_os_activity_apply")
