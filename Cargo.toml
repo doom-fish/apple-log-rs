@@ -1,11 +1,11 @@
 [package]
 name = "apple-log"
-version = "0.3.0"
+version = "0.4.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 homepage = "https://github.com/doom-fish/apple-log-rs"
 repository = "https://github.com/doom-fish/apple-log-rs"
-description = "Safe Rust bindings for Apple's os_log — structured logging that integrates with Console.app + the log CLI on macOS"
+description = "Safe Rust bindings for Apple's os_log — structured logging, signposts, and activity ids on macOS"
 authors = ["Per Johansson <per@doom.fish>"]
 keywords = ["log", "logging", "os-log", "macos", "console"]
 categories = ["api-bindings", "os::macos-apis", "development-tools::debugging"]
@@ -14,6 +14,8 @@ readme = "README.md"
 build = "build.rs"
 include = [
     "src/**/*",
+    "examples/**/*",
+    "tests/**/*",
     "build.rs",
     "Cargo.toml",
     "README.md",
@@ -51,6 +53,12 @@ maintenance = { status = "actively-developed" }
 
 [[example]]
 name = "01_basic_log"
+
+[[example]]
+name = "02_signposts"
+
+[[example]]
+name = "03_privacy_and_activity"
 
 [profile.release]
 debug = "full"

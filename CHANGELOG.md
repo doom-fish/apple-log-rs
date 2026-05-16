@@ -1,22 +1,29 @@
 # Changelog
 
+## [0.4.0] - 2026-05-16
+
+### Added
+
+- Public/private redaction control via `Privacy`, `Logger::log_with_privacy`, and `log_with_privacy`.
+- Borrowed `Logger::default()` and `Logger::disabled()` handles for `OS_LOG_DEFAULT` / `OS_LOG_DISABLED`.
+- Signpost helpers for `os_signpost_id_make_with_pointer`, animation intervals, signpost id constants, and signpost category constants.
+- `ActivityIds` plus `active_activity_ids()` for current + parent activity-id introspection.
+- Smoke examples for signposts and privacy/activity usage.
+
+### Changed
+
+- README status/roadmap now matches the shipped `os_log` / `os_signpost` / `os_activity` surface.
+- API coverage tests now verify signpost and activity header symbols in addition to base logging macros.
+
 ## [0.1.0] - Initial release
 
 ### Added
 
-- `Logger::new(subsystem, category)` opens an `os_log_t` handle.
-- `Logger::{info, debug, error, fault, log(level, msg)}` emit messages
-  at all 5 standard `os_log_type_t` levels.
-- `log(level, msg)` free function emits via `OS_LOG_DEFAULT`.
-- `Level` enum mirroring Apple's `os_log_type_t`.
-- `LogError`: `InvalidArgument`, `CreateFailed`.
-- Tiny C shim (`src/c-shim/apple_log_shim.c`, built via `cc`) wraps the
-  `os_log_with_type` macro since Rust can't invoke C macros directly.
-- `Logger` is `Send + Sync` — `os_log_t` is thread-safe per Apple docs.
-
-### Verification
-
-- `cargo run --example 01_basic_log` emits 6 messages visible via
-  `log stream --predicate 'subsystem == "fish.doom.apple-log"'`.
-- 3 API-coverage tests verify the os_log macros + type constants exist
-  in the SDK header and our `Level` enum matches Apple's numeric values.
+- `Logger::new(subsystem, category)` — wraps `os_log_create`.
+- `Logger::{log, info, debug, error, fault}` convenience API.
+- `log(Level, msg)` free function via `OS_LOG_DEFAULT`.
+- `Level` enum matching Apple's 5 standard levels.
+- `Logger::is_enabled(level)` via `os_log_type_enabled`.
+- Signpost helpers: generated signpost IDs, enablement check, events, and begin/end intervals.
+- `active_activity_id()` current-activity helper.
+- Example `01_basic_log` and basic header coverage tests.

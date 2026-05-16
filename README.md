@@ -2,7 +2,7 @@
 
 Safe Rust bindings for Apple's [`os_log`](https://developer.apple.com/documentation/os/logging) on macOS — structured logging that integrates with Console.app and the `log` CLI.
 
-> **Status:** experimental. v0.1 ships per-subsystem `Logger`, free-function logging via `OS_LOG_DEFAULT`, all 5 standard levels (Default / Info / Debug / Error / Fault). v0.2 adds `os_signpost` for performance tracing, `OSLogStore` for reading back logs, and `log` crate facade impl.
+> **Status:** actively developed. v0.4 ships per-subsystem `Logger`, free-function logging via `OS_LOG_DEFAULT`, all 5 standard levels, public/private redaction control, default/disabled log handles, signpost helpers, and current activity-id introspection.
 
 Pure C (with a tiny shim file built via `cc`) — **zero Swift bridge**.
 
@@ -12,14 +12,19 @@ Pure C (with a tiny shim file built via `cc`) — **zero Swift bridge**.
 use apple_log::prelude::*;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Free-function logging via OS_LOG_DEFAULT (no subsystem).
     log(Level::Info, "starting up");
+    log_with_privacy(Level::Debug, "token=secret", Privacy::Private);
 
-    // Per-subsystem Logger (filter via `log stream --predicate ...`).
-    let logger = Logger::new("fish.doom.myapp", "net")?;
+    let logger = Logger::new("fish.doom.myapp", CATEGORY_POINTS_OF_INTEREST)?;
     logger.info("opening port 8080");
     logger.debug("tcp socket fd=7");
-    logger.error("connection refused");
+
+    let span = logger.signpost_id();
+    logger.signpost_interval_begin(span, "startup");
+    logger.signpost_interval_end(span, "startup");
+
+    let activity = active_activity_ids();
+    println!("current activity id: {}", activity.current);
     Ok(())
 }
 ```
@@ -36,7 +41,7 @@ Or open **Console.app** and filter by `subsystem`.
 
 - **System-integrated**: visible in Console.app, `log` CLI, system-wide log archives — even after your binary exits.
 - **Persistent**: error+ entries survive log rotation.
-- **Privacy-aware**: format specifiers (`%{public}s` vs `%{private}s`) control redaction.
+- **Privacy-aware**: `Privacy::Public` vs `Privacy::Private` controls redaction.
 - **No I/O cost**: the kernel buffers log records; expensive-to-format messages are skipped when no subscriber is active.
 - **Free for the user**: integrates with existing macOS log infrastructure (sysdiagnose, MDM exports, etc.).
 
@@ -54,13 +59,13 @@ your-app ──► apple-log ──► /private/var/db/diagnostics
 
 - [x] `Logger::new(subsystem, category)`
 - [x] `Logger::{info, debug, error, fault}` + `log(level, msg)` shortcut
-- [x] `log()` free function via `OS_LOG_DEFAULT`
-- [x] All 5 levels (Default / Info / Debug / Error / Fault)
-- [x] `Send + Sync` `Logger`
-- [ ] `os_signpost` for performance tracing
-- [ ] `OSLogStore` to read back past logs from Rust
+- [x] Public/private redaction control
+- [x] `Logger::default()` / `Logger::disabled()` handles
+- [x] Signpost ids, events, intervals, and animation intervals
+- [x] Signpost category constants (`PointsOfInterest`, `DynamicTracing`, `DynamicStackTracing`)
+- [x] Current activity id + parent-id introspection
+- [ ] Activity creation / scope helpers for named activities
 - [ ] `log` + `tracing` crate facade backends
-- [ ] Format-string redaction control (`%{private}s` selector)
 
 ## License
 
