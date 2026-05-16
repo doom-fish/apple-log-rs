@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.5.0] - 2026-05-16
+
+### Added
+
+- SwiftPM-based bridge build that wraps both the C `os` APIs and the Swift `os` / `OSLog` modules.
+- Safe wrappers for `OSLog`, `OSLogStore`, `OSLogEntryLog`, `OSLogEntrySignpost`, `OSLogEntryBoundary`, `OSLogEntryActivity`, `OSSignpostId`, `OSSignposter`, `OSActivity`, and `OSAtomic`.
+- One numbered example and one smoke test for each logical area.
+- `COVERAGE.md` auditing the public SDK surface used by the crate.
+
+### Changed
+
+- `Logger` now uses the Swift `Logger` bridge while keeping the existing compatibility API intact.
+- Raw C FFI is now isolated behind the `raw-ffi` feature (still enabled by default for backwards compatibility).
+- Build orchestration now follows the multi-file Swift bridge pattern used across the Apple SDK crates.
+
 ## [0.4.0] - 2026-05-16
 
 ### Added

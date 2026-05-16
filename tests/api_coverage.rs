@@ -86,6 +86,27 @@ fn activity_symbols_present_in_header() {
 }
 
 #[test]
+fn os_atomic_symbols_present_in_header() {
+    let header = read_header("usr/include/libkern/OSAtomicDeprecated.h");
+    for sym in &[
+        "OSAtomicAdd32",
+        "OSAtomicCompareAndSwap32",
+        "OSAtomicCompareAndSwap64",
+        "OSAtomicCompareAndSwapPtr",
+        "OSAtomicTestAndSet",
+        "OSAtomicTestAndClear",
+        "OSAtomicFifoEnqueue",
+        "OSAtomicFifoDequeue",
+    ] {
+        assert!(header.contains(sym), "OSAtomicDeprecated.h missing {sym:?}");
+    }
+    let queue_header = read_header("usr/include/libkern/OSAtomicQueue.h");
+    for sym in &["OSAtomicEnqueue", "OSAtomicDequeue", "OSQueueHead"] {
+        assert!(queue_header.contains(sym), "OSAtomicQueue.h missing {sym:?}");
+    }
+}
+
+#[test]
 fn rust_constants_match_apple_values() {
     use apple_log::{
         Level, SignpostId, CATEGORY_DYNAMIC_STACK_TRACING, CATEGORY_DYNAMIC_TRACING,

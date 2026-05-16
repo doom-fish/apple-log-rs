@@ -1,72 +1,89 @@
 # apple-log
 
-Safe Rust bindings for Apple's [`os_log`](https://developer.apple.com/documentation/os/logging) on macOS — structured logging that integrates with Console.app and the `log` CLI.
+Safe Rust bindings for Apple's unified logging stack on macOS.
 
-> **Status:** actively developed. v0.4 ships per-subsystem `Logger`, free-function logging via `OS_LOG_DEFAULT`, all 5 standard levels, public/private redaction control, default/disabled log handles, signpost helpers, and current activity-id introspection.
+`apple-log` v0.5 adds a Swift bridge on top of the C `os` APIs and the Swift `os` / `OSLog` modules, covering:
 
-Pure C (with a tiny shim file built via `cc`) — **zero Swift bridge**.
+- `Logger`
+- `OSLog`
+- `OSLogStore`
+- `OSLogEntryLog`
+- `OSLogEntrySignpost`
+- `OSLogEntryBoundary`
+- `OSLogEntryActivity`
+- `OSSignpostID`
+- `OSSignposter`
+- `OSActivity`
+- `OSAtomic`
+
+> **Platform:** macOS 12+ (the bridge uses Swift `Logger` and `OSSignposter`).
 
 ## Quick start
 
 ```rust,no_run
+use std::time::Duration;
+
 use apple_log::prelude::*;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    log(Level::Info, "starting up");
-    log_with_privacy(Level::Debug, "token=secret", Privacy::Private);
+    let logger = Logger::new("fish.doom.myapp", "network")?;
+    logger.info("booting service");
+    logger.log_with_privacy(Level::Info, "token=secret", Privacy::Private);
 
-    let logger = Logger::new("fish.doom.myapp", CATEGORY_POINTS_OF_INTEREST)?;
-    logger.info("opening port 8080");
-    logger.debug("tcp socket fd=7");
+    let signposter = OSSignposter::new("fish.doom.myapp", CATEGORY_POINTS_OF_INTEREST)?;
+    let signpost_id = signposter.make_signpost_id();
+    let interval = signposter.begin_interval("startup", signpost_id, "begin startup");
+    signposter.end_interval("startup", interval, "end startup");
 
-    let span = logger.signpost_id();
-    logger.signpost_interval_begin(span, "startup");
-    logger.signpost_interval_end(span, "startup");
+    let activity = OSActivity::new(
+        "index cache",
+        Some(&OSActivity::current()),
+        OSActivityFlags::DEFAULT,
+    )?;
+    activity.apply(|| Logger::default().info("inside activity"));
 
-    let activity = active_activity_ids();
-    println!("current activity id: {}", activity.current);
+    let store = OSLogStore::new(OSLogStoreScope::CurrentProcessIdentifier)?;
+    let entries = store.entries(
+        OSLogEnumeratorOptions::REVERSE,
+        Some(&store.position_time_interval_since_end(Duration::from_secs(5))),
+        None,
+    )?;
+    println!("recent entries: {}", entries.len());
+
     Ok(())
 }
 ```
 
-Then in another terminal:
-```sh
-log stream --predicate 'subsystem == "fish.doom.myapp"'
-log show --info --debug --predicate 'subsystem == "fish.doom.myapp"' --last 1m
+## Areas and modules
+
+- `apple_log::logger::Logger` and compatibility free functions in `apple_log::log`
+- `apple_log::os_log::OSLog`
+- `apple_log::os_log_store::{OSLogStore, OSLogPosition, OSLogStoreEntry}`
+- `apple_log::os_log_entry_*` typed entry wrappers
+- `apple_log::os_signpost_id::OSSignpostId`
+- `apple_log::os_signposter::OSSignposter`
+- `apple_log::os_activity::OSActivity`
+- `apple_log::os_atomic::{OSAtomicI32, OSAtomicI64, OSAtomicQueue, OSAtomicFifoQueue}`
+
+## Raw C FFI
+
+The crate keeps the low-level C shim behind the `raw-ffi` feature. The feature is enabled by default for backwards compatibility.
+
+```toml
+[dependencies]
+apple-log = { version = "0.5", default-features = false }
 ```
 
-Or open **Console.app** and filter by `subsystem`.
+Enable `raw-ffi` when you want direct access to the wrapped C symbols under `apple_log::ffi`.
 
-## Why `os_log` over `log`/`tracing`?
+## Examples
 
-- **System-integrated**: visible in Console.app, `log` CLI, system-wide log archives — even after your binary exits.
-- **Persistent**: error+ entries survive log rotation.
-- **Privacy-aware**: `Privacy::Public` vs `Privacy::Private` controls redaction.
-- **No I/O cost**: the kernel buffers log records; expensive-to-format messages are skipped when no subscriber is active.
-- **Free for the user**: integrates with existing macOS log infrastructure (sysdiagnose, MDM exports, etc.).
+The crate ships one numbered example per logical area in `examples/01_logger.rs` through `examples/11_os_atomic.rs`.
 
-You can still wire `log`/`tracing` on top — both crates support pluggable backends.
+## Coverage
 
-```text
-your-app ──► apple-log ──► /private/var/db/diagnostics
-                                  │
-                                  ├──► Console.app
-                                  ├──► `log` CLI
-                                  └──► sysdiagnose archives
-```
-
-## Roadmap
-
-- [x] `Logger::new(subsystem, category)`
-- [x] `Logger::{info, debug, error, fault}` + `log(level, msg)` shortcut
-- [x] Public/private redaction control
-- [x] `Logger::default()` / `Logger::disabled()` handles
-- [x] Signpost ids, events, intervals, and animation intervals
-- [x] Signpost category constants (`PointsOfInterest`, `DynamicTracing`, `DynamicStackTracing`)
-- [x] Current activity id + parent-id introspection
-- [ ] Activity creation / scope helpers for named activities
-- [ ] `log` + `tracing` crate facade backends
+See [COVERAGE.md](COVERAGE.md) for the SDK audit and implementation matrix.
 
 ## License
 
-Licensed under either of [Apache-2.0](LICENSE-APACHE) or [MIT](LICENSE-MIT) at your option.
+Licensed under either [Apache-2.0](LICENSE-APACHE) or [MIT](LICENSE-MIT) at your option.
