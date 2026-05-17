@@ -43,7 +43,9 @@ impl OSLogEntrySignpost {
     #[must_use]
     pub fn signpost_name(&self) -> String {
         unsafe {
-            take_optional_c_string(ffi::apple_log_os_log_entry_copy_signpost_name(self.ptr.as_ptr()))
+            take_optional_c_string(ffi::apple_log_os_log_entry_copy_signpost_name(
+                self.ptr.as_ptr(),
+            ))
         }
         .unwrap_or_default()
     }

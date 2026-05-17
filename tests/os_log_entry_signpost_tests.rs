@@ -4,7 +4,8 @@ use apple_log::prelude::*;
 
 #[test]
 fn os_log_entry_signpost_accessors() {
-    let signposter = OSSignposter::new("fish.doom.apple-log", CATEGORY_POINTS_OF_INTEREST).expect("signposter");
+    let signposter =
+        OSSignposter::new("fish.doom.apple-log", CATEGORY_POINTS_OF_INTEREST).expect("signposter");
     let id = signposter.make_signpost_id();
     let interval = signposter.begin_interval("signpost-test", id, "begin");
     signposter.end_interval("signpost-test", interval, "end");
@@ -18,7 +19,10 @@ fn os_log_entry_signpost_accessors() {
             None,
         )
         .expect("entries");
-    if let Some(OSLogStoreEntry::Signpost(entry)) = entries.into_iter().find(|entry| matches!(entry, OSLogStoreEntry::Signpost(_))) {
+    if let Some(OSLogStoreEntry::Signpost(entry)) = entries
+        .into_iter()
+        .find(|entry| matches!(entry, OSLogStoreEntry::Signpost(_)))
+    {
         let _ = entry.composed_message();
         let _ = entry.signpost_identifier();
         let _ = entry.signpost_name();

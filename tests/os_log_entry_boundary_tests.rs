@@ -12,7 +12,10 @@ fn os_log_entry_boundary_accessors() {
             None,
         )
         .expect("entries");
-    if let Some(OSLogStoreEntry::Boundary(entry)) = entries.into_iter().find(|entry| matches!(entry, OSLogStoreEntry::Boundary(_))) {
+    if let Some(OSLogStoreEntry::Boundary(entry)) = entries
+        .into_iter()
+        .find(|entry| matches!(entry, OSLogStoreEntry::Boundary(_)))
+    {
         let _ = entry.composed_message();
         let _ = entry.date();
         let _ = entry.store_category();

@@ -9,7 +9,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let interval = signposter.begin_animation_interval("animation", id, "begin animation");
     std::thread::sleep(Duration::from_millis(5));
     signposter.end_interval("animation", interval, "end animation");
-    signposter.with_interval_signpost("wrapped", id, "around", || { std::thread::sleep(Duration::from_millis(1)); });
+    signposter.with_interval_signpost("wrapped", id, "around", || {
+        std::thread::sleep(Duration::from_millis(1));
+    });
     println!("enabled={} id={}", signposter.is_enabled(), id.as_u64());
     Ok(())
 }

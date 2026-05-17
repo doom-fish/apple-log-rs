@@ -244,21 +244,32 @@ extern "C" {
     pub(crate) fn apple_log_os_atomic_queue_new(error_out: *mut *mut c_char) -> *mut c_void;
     pub(crate) fn apple_log_os_atomic_queue_release(queue: *mut c_void);
     pub(crate) fn apple_log_os_atomic_queue_enqueue(queue: *mut c_void, value: usize);
-    pub(crate) fn apple_log_os_atomic_queue_dequeue(queue: *mut c_void, value_out: *mut usize) -> bool;
+    pub(crate) fn apple_log_os_atomic_queue_dequeue(
+        queue: *mut c_void,
+        value_out: *mut usize,
+    ) -> bool;
     pub(crate) fn apple_log_os_atomic_fifo_queue_new(error_out: *mut *mut c_char) -> *mut c_void;
     pub(crate) fn apple_log_os_atomic_fifo_queue_release(queue: *mut c_void);
     pub(crate) fn apple_log_os_atomic_fifo_queue_enqueue(queue: *mut c_void, value: usize);
-    pub(crate) fn apple_log_os_atomic_fifo_queue_dequeue(queue: *mut c_void, value_out: *mut usize) -> bool;
+    pub(crate) fn apple_log_os_atomic_fifo_queue_dequeue(
+        queue: *mut c_void,
+        value_out: *mut usize,
+    ) -> bool;
 
     pub(crate) fn apple_log_os_log_store_local(error_out: *mut *mut c_char) -> *mut c_void;
-    pub(crate) fn apple_log_os_log_store_create(scope: i32, error_out: *mut *mut c_char) -> *mut c_void;
+    pub(crate) fn apple_log_os_log_store_create(
+        scope: i32,
+        error_out: *mut *mut c_char,
+    ) -> *mut c_void;
     pub(crate) fn apple_log_os_log_store_from_url(
         path: *const c_char,
         error_out: *mut *mut c_char,
     ) -> *mut c_void;
     pub(crate) fn apple_log_os_log_store_release(store: *mut c_void);
-    pub(crate) fn apple_log_os_log_store_position_date(store: *mut c_void, seconds_since_1970: f64)
-        -> *mut c_void;
+    pub(crate) fn apple_log_os_log_store_position_date(
+        store: *mut c_void,
+        seconds_since_1970: f64,
+    ) -> *mut c_void;
     pub(crate) fn apple_log_os_log_store_position_since_end(
         store: *mut c_void,
         seconds: f64,
@@ -292,7 +303,10 @@ extern "C" {
     pub(crate) fn apple_log_os_log_entry_copy_format_string(entry: *mut c_void) -> *mut c_char;
     pub(crate) fn apple_log_os_log_entry_copy_subsystem(entry: *mut c_void) -> *mut c_char;
     pub(crate) fn apple_log_os_log_entry_component_count(entry: *mut c_void) -> isize;
-    pub(crate) fn apple_log_os_log_entry_component_get(entry: *mut c_void, index: isize) -> *mut c_void;
+    pub(crate) fn apple_log_os_log_entry_component_get(
+        entry: *mut c_void,
+        index: isize,
+    ) -> *mut c_void;
     pub(crate) fn apple_log_os_log_message_component_release(component: *mut c_void);
     pub(crate) fn apple_log_os_log_message_component_copy_format_substring(
         component: *mut c_void,
@@ -305,8 +319,9 @@ extern "C" {
     ) -> i32;
     pub(crate) fn apple_log_os_log_message_component_get_double(component: *mut c_void) -> f64;
     pub(crate) fn apple_log_os_log_message_component_get_int64(component: *mut c_void) -> i64;
-    pub(crate) fn apple_log_os_log_message_component_copy_string(component: *mut c_void)
-        -> *mut c_char;
+    pub(crate) fn apple_log_os_log_message_component_copy_string(
+        component: *mut c_void,
+    ) -> *mut c_char;
     pub(crate) fn apple_log_os_log_message_component_get_uint64(component: *mut c_void) -> u64;
     pub(crate) fn apple_log_os_log_message_component_copy_data(
         component: *mut c_void,

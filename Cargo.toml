@@ -14,7 +14,8 @@ readme = "README.md"
 build = "build.rs"
 include = [
     "src/**/*",
-    "swift-bridge/**/*",
+    "swift-bridge/Package.swift",
+    "swift-bridge/Sources/**/*",
     "examples/**/*",
     "tests/**/*",
     "build.rs",

@@ -4,8 +4,8 @@
 
 pub mod error;
 pub mod ffi;
-pub mod logger;
 pub mod log;
+pub mod logger;
 pub mod os_activity;
 pub mod os_atomic;
 pub mod os_log;
@@ -20,7 +20,9 @@ pub mod os_signposter;
 mod bridge_support;
 
 pub use error::LogError;
-pub use log::{active_activity_id, active_activity_ids, log, log_enabled, log_with_privacy, ActivityIds};
+pub use log::{
+    active_activity_id, active_activity_ids, log, log_enabled, log_with_privacy, ActivityIds,
+};
 pub use logger::{Logger, Privacy};
 pub use os_activity::{OSActivity, OSActivityFlags, OSActivityScope};
 pub use os_atomic::{OSAtomicFifoQueue, OSAtomicI32, OSAtomicI64, OSAtomicQueue};

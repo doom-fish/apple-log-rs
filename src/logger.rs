@@ -202,7 +202,11 @@ impl Logger {
     pub fn signpost_interval_end(&self, id: OSSignpostId, name: &str) {
         let name = sanitized_c_string(name);
         unsafe {
-            ffi::apple_log_logger_signpost_interval_end(self.ptr.as_ptr(), id.as_u64(), name.as_ptr());
+            ffi::apple_log_logger_signpost_interval_end(
+                self.ptr.as_ptr(),
+                id.as_u64(),
+                name.as_ptr(),
+            );
         }
     }
 

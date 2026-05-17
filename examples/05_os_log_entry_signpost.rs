@@ -17,8 +17,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Some(&store.position_time_interval_since_end(Duration::from_secs(5))),
         None,
     )?;
-    if let Some(OSLogStoreEntry::Signpost(entry)) = entries.into_iter().find(|entry| matches!(entry, OSLogStoreEntry::Signpost(_))) {
-        println!("name={} type={:?} id={}", entry.signpost_name(), entry.signpost_type(), entry.signpost_identifier());
+    if let Some(OSLogStoreEntry::Signpost(entry)) = entries
+        .into_iter()
+        .find(|entry| matches!(entry, OSLogStoreEntry::Signpost(_)))
+    {
+        println!(
+            "name={} type={:?} id={}",
+            entry.signpost_name(),
+            entry.signpost_type(),
+            entry.signpost_identifier()
+        );
     } else {
         println!("no signpost entry found in current-process store");
     }

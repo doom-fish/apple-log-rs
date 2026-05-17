@@ -11,6 +11,9 @@ fn os_log_store_smoke() {
     let entries = store
         .entries(OSLogEnumeratorOptions::REVERSE, Some(&position), None)
         .expect("entries");
-    assert!(!entries.is_empty(), "expected at least one current-process log entry");
+    assert!(
+        !entries.is_empty(),
+        "expected at least one current-process log entry"
+    );
     let _ = OSLogStore::local().expect("local store");
 }

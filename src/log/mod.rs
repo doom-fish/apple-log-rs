@@ -3,8 +3,7 @@
 pub use crate::logger::{Logger, Privacy};
 pub use crate::os_activity::{active_activity_id, active_activity_ids, ActivityIds};
 pub use crate::os_log::{
-    Level, CATEGORY_DYNAMIC_STACK_TRACING, CATEGORY_DYNAMIC_TRACING,
-    CATEGORY_POINTS_OF_INTEREST,
+    Level, CATEGORY_DYNAMIC_STACK_TRACING, CATEGORY_DYNAMIC_TRACING, CATEGORY_POINTS_OF_INTEREST,
 };
 pub use crate::os_signpost_id::{OSSignpostId, SignpostId};
 

@@ -164,9 +164,9 @@ impl OSLogMessageComponent {
     #[must_use]
     pub fn placeholder(&self) -> String {
         unsafe {
-            take_optional_c_string(
-                ffi::apple_log_os_log_message_component_copy_placeholder(self.ptr.as_ptr()),
-            )
+            take_optional_c_string(ffi::apple_log_os_log_message_component_copy_placeholder(
+                self.ptr.as_ptr(),
+            ))
         }
         .unwrap_or_default()
     }
@@ -186,7 +186,10 @@ impl OSLogMessageComponent {
                 let mut length = 0_isize;
                 let bytes = unsafe {
                     take_owned_bytes(
-                        ffi::apple_log_os_log_message_component_copy_data(self.ptr.as_ptr(), &mut length),
+                        ffi::apple_log_os_log_message_component_copy_data(
+                            self.ptr.as_ptr(),
+                            &mut length,
+                        ),
                         length.max(0) as usize,
                     )
                 };
@@ -200,9 +203,9 @@ impl OSLogMessageComponent {
             }),
             OSLogMessageArgumentCategory::String => {
                 let value = unsafe {
-                    take_optional_c_string(
-                        ffi::apple_log_os_log_message_component_copy_string(self.ptr.as_ptr()),
-                    )
+                    take_optional_c_string(ffi::apple_log_os_log_message_component_copy_string(
+                        self.ptr.as_ptr(),
+                    ))
                 }
                 .unwrap_or_default();
                 OSLogMessageArgument::String(value)
@@ -226,13 +229,19 @@ pub trait OSLogEntryCommon {
 
     #[must_use]
     fn composed_message(&self) -> String {
-        unsafe { take_optional_c_string(ffi::apple_log_os_log_entry_copy_composed_message(self.raw_entry_ptr())) }
-            .unwrap_or_default()
+        unsafe {
+            take_optional_c_string(ffi::apple_log_os_log_entry_copy_composed_message(
+                self.raw_entry_ptr(),
+            ))
+        }
+        .unwrap_or_default()
     }
 
     #[must_use]
     fn date(&self) -> SystemTime {
-        secs_to_system_time(unsafe { ffi::apple_log_os_log_entry_get_date_seconds(self.raw_entry_ptr()) })
+        secs_to_system_time(unsafe {
+            ffi::apple_log_os_log_entry_get_date_seconds(self.raw_entry_ptr())
+        })
     }
 
     #[must_use]
@@ -252,8 +261,12 @@ pub trait OSLogEntryFromProcess: OSLogEntryCommon {
 
     #[must_use]
     fn process(&self) -> String {
-        unsafe { take_optional_c_string(ffi::apple_log_os_log_entry_copy_process(self.raw_entry_ptr())) }
-            .unwrap_or_default()
+        unsafe {
+            take_optional_c_string(ffi::apple_log_os_log_entry_copy_process(
+                self.raw_entry_ptr(),
+            ))
+        }
+        .unwrap_or_default()
     }
 
     #[must_use]
@@ -263,8 +276,12 @@ pub trait OSLogEntryFromProcess: OSLogEntryCommon {
 
     #[must_use]
     fn sender(&self) -> String {
-        unsafe { take_optional_c_string(ffi::apple_log_os_log_entry_copy_sender(self.raw_entry_ptr())) }
-            .unwrap_or_default()
+        unsafe {
+            take_optional_c_string(ffi::apple_log_os_log_entry_copy_sender(
+                self.raw_entry_ptr(),
+            ))
+        }
+        .unwrap_or_default()
     }
 
     #[must_use]
@@ -277,22 +294,32 @@ pub trait OSLogEntryFromProcess: OSLogEntryCommon {
 pub trait OSLogEntryWithPayload: OSLogEntryFromProcess {
     #[must_use]
     fn category(&self) -> String {
-        unsafe { take_optional_c_string(ffi::apple_log_os_log_entry_copy_category(self.raw_entry_ptr())) }
-            .unwrap_or_default()
+        unsafe {
+            take_optional_c_string(ffi::apple_log_os_log_entry_copy_category(
+                self.raw_entry_ptr(),
+            ))
+        }
+        .unwrap_or_default()
     }
 
     #[must_use]
     fn format_string(&self) -> String {
         unsafe {
-            take_optional_c_string(ffi::apple_log_os_log_entry_copy_format_string(self.raw_entry_ptr()))
+            take_optional_c_string(ffi::apple_log_os_log_entry_copy_format_string(
+                self.raw_entry_ptr(),
+            ))
         }
         .unwrap_or_default()
     }
 
     #[must_use]
     fn subsystem(&self) -> String {
-        unsafe { take_optional_c_string(ffi::apple_log_os_log_entry_copy_subsystem(self.raw_entry_ptr())) }
-            .unwrap_or_default()
+        unsafe {
+            take_optional_c_string(ffi::apple_log_os_log_entry_copy_subsystem(
+                self.raw_entry_ptr(),
+            ))
+        }
+        .unwrap_or_default()
     }
 
     #[must_use]
@@ -393,7 +420,10 @@ impl OSLogStore {
     #[must_use]
     pub fn position_time_interval_since_end(&self, duration: Duration) -> OSLogPosition {
         let ptr = NonNull::new(unsafe {
-            ffi::apple_log_os_log_store_position_since_end(self.ptr.as_ptr(), duration.as_secs_f64())
+            ffi::apple_log_os_log_store_position_since_end(
+                self.ptr.as_ptr(),
+                duration.as_secs_f64(),
+            )
         })
         .expect("Swift bridge never returns NULL for OSLogStore::position_time_interval_since_end");
         OSLogPosition::from_raw(ptr)
@@ -424,19 +454,24 @@ impl OSLogStore {
         position: Option<&OSLogPosition>,
         predicate: Option<&str>,
     ) -> Result<Vec<OSLogStoreEntry>, LogError> {
-        let predicate = predicate.map(|value| c_string_arg("predicate", value)).transpose()?;
+        let predicate = predicate
+            .map(|value| c_string_arg("predicate", value))
+            .transpose()?;
         let list = OSLogEntryList {
             ptr: bridge_ptr_result("OSLogStore::get_entries", |error_out| unsafe {
                 ffi::apple_log_os_log_store_get_entries(
                     self.ptr.as_ptr(),
                     options.bits(),
                     position.map_or(std::ptr::null_mut(), OSLogPosition::as_ptr),
-                    predicate.as_ref().map_or(std::ptr::null(), |value| value.as_ptr()),
+                    predicate
+                        .as_ref()
+                        .map_or(std::ptr::null(), |value| value.as_ptr()),
                     error_out,
                 )
             })?,
         };
-        let count = unsafe { ffi::apple_log_os_log_entry_list_count(list.ptr.as_ptr()) }.max(0) as usize;
+        let count =
+            unsafe { ffi::apple_log_os_log_entry_list_count(list.ptr.as_ptr()) }.max(0) as usize;
         let mut entries = Vec::with_capacity(count);
         for index in 0..count {
             let Some(entry_ptr) = NonNull::new(unsafe {

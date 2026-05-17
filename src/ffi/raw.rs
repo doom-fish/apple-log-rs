@@ -90,7 +90,11 @@ extern "C" {
     pub fn apple_os_atomic_xor32_barrier(mask: u32, value: *mut u32) -> i32;
     pub fn apple_os_atomic_xor32_orig(mask: u32, value: *mut u32) -> i32;
     pub fn apple_os_atomic_xor32_orig_barrier(mask: u32, value: *mut u32) -> i32;
-    pub fn apple_os_atomic_compare_and_swap32(old_value: i32, new_value: i32, value: *mut i32) -> bool;
+    pub fn apple_os_atomic_compare_and_swap32(
+        old_value: i32,
+        new_value: i32,
+        value: *mut i32,
+    ) -> bool;
     pub fn apple_os_atomic_compare_and_swap32_barrier(
         old_value: i32,
         new_value: i32,
@@ -102,21 +106,31 @@ extern "C" {
     pub fn apple_os_atomic_increment64_barrier(value: *mut i64) -> i64;
     pub fn apple_os_atomic_decrement64(value: *mut i64) -> i64;
     pub fn apple_os_atomic_decrement64_barrier(value: *mut i64) -> i64;
-    pub fn apple_os_atomic_compare_and_swap64(old_value: i64, new_value: i64, value: *mut i64) -> bool;
+    pub fn apple_os_atomic_compare_and_swap64(
+        old_value: i64,
+        new_value: i64,
+        value: *mut i64,
+    ) -> bool;
     pub fn apple_os_atomic_compare_and_swap64_barrier(
         old_value: i64,
         new_value: i64,
         value: *mut i64,
     ) -> bool;
-    pub fn apple_os_atomic_compare_and_swap_int(old_value: i32, new_value: i32, value: *mut i32)
-        -> bool;
+    pub fn apple_os_atomic_compare_and_swap_int(
+        old_value: i32,
+        new_value: i32,
+        value: *mut i32,
+    ) -> bool;
     pub fn apple_os_atomic_compare_and_swap_int_barrier(
         old_value: i32,
         new_value: i32,
         value: *mut i32,
     ) -> bool;
-    pub fn apple_os_atomic_compare_and_swap_long(old_value: i64, new_value: i64, value: *mut i64)
-        -> bool;
+    pub fn apple_os_atomic_compare_and_swap_long(
+        old_value: i64,
+        new_value: i64,
+        value: *mut i64,
+    ) -> bool;
     pub fn apple_os_atomic_compare_and_swap_long_barrier(
         old_value: i64,
         new_value: i64,

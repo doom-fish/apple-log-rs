@@ -100,13 +100,18 @@ impl OSSignposter {
 
     #[must_use]
     pub fn make_signpost_id(&self) -> OSSignpostId {
-        OSSignpostId::from_u64(unsafe { ffi::apple_log_os_signposter_make_signpost_id(self.ptr.as_ptr()) })
+        OSSignpostId::from_u64(unsafe {
+            ffi::apple_log_os_signposter_make_signpost_id(self.ptr.as_ptr())
+        })
     }
 
     #[must_use]
     pub fn make_signpost_id_from_pointer<T>(&self, pointer: *const T) -> OSSignpostId {
         OSSignpostId::from_u64(unsafe {
-            ffi::apple_log_os_signposter_make_signpost_id_from_pointer(self.ptr.as_ptr(), pointer.cast())
+            ffi::apple_log_os_signposter_make_signpost_id_from_pointer(
+                self.ptr.as_ptr(),
+                pointer.cast(),
+            )
         })
     }
 
@@ -124,7 +129,12 @@ impl OSSignposter {
     }
 
     #[must_use]
-    pub fn begin_interval(&self, name: &str, id: OSSignpostId, message: &str) -> OSSignpostInterval {
+    pub fn begin_interval(
+        &self,
+        name: &str,
+        id: OSSignpostId,
+        message: &str,
+    ) -> OSSignpostInterval {
         let name = sanitized_c_string(name);
         let message = sanitized_c_string(message);
         unsafe {
@@ -135,7 +145,10 @@ impl OSSignposter {
                 message.as_ptr(),
             );
         }
-        OSSignpostInterval { id, animation: false }
+        OSSignpostInterval {
+            id,
+            animation: false,
+        }
     }
 
     #[must_use]
@@ -155,7 +168,10 @@ impl OSSignposter {
                 message.as_ptr(),
             );
         }
-        OSSignpostInterval { id, animation: true }
+        OSSignpostInterval {
+            id,
+            animation: true,
+        }
     }
 
     pub fn end_interval(&self, name: &str, interval: OSSignpostInterval, message: &str) {

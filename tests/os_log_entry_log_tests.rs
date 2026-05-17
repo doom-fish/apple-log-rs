@@ -14,7 +14,10 @@ fn os_log_entry_log_accessors() {
             None,
         )
         .expect("entries");
-    if let Some(OSLogStoreEntry::Log(entry)) = entries.into_iter().find(|entry| matches!(entry, OSLogStoreEntry::Log(_))) {
+    if let Some(OSLogStoreEntry::Log(entry)) = entries
+        .into_iter()
+        .find(|entry| matches!(entry, OSLogStoreEntry::Log(_)))
+    {
         let _ = entry.composed_message();
         let _ = entry.date();
         let _ = entry.store_category();

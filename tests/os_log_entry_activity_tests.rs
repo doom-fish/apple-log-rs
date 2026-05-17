@@ -4,7 +4,12 @@ use apple_log::prelude::*;
 
 #[test]
 fn os_log_entry_activity_accessors() {
-    let activity = OSActivity::new("activity-entry-test", Some(&OSActivity::current()), OSActivityFlags::DEFAULT).expect("activity");
+    let activity = OSActivity::new(
+        "activity-entry-test",
+        Some(&OSActivity::current()),
+        OSActivityFlags::DEFAULT,
+    )
+    .expect("activity");
     activity.apply(|| Logger::default().info("inside activity test"));
     std::thread::sleep(Duration::from_millis(100));
 
@@ -16,7 +21,10 @@ fn os_log_entry_activity_accessors() {
             None,
         )
         .expect("entries");
-    if let Some(OSLogStoreEntry::Activity(entry)) = entries.into_iter().find(|entry| matches!(entry, OSLogStoreEntry::Activity(_))) {
+    if let Some(OSLogStoreEntry::Activity(entry)) = entries
+        .into_iter()
+        .find(|entry| matches!(entry, OSLogStoreEntry::Activity(_)))
+    {
         let _ = entry.composed_message();
         let _ = entry.parent_activity_identifier();
         let _ = entry.process();

@@ -7,7 +7,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let fifo = OSAtomicFifoQueue::new()?;
 
     println!("add32={} inc64={}", atomic32.add(5), atomic64.increment());
-    println!("cas32={} cas64={}", atomic32.compare_and_swap(15, 20), atomic64.compare_and_swap(101, 200));
+    println!(
+        "cas32={} cas64={}",
+        atomic32.compare_and_swap(15, 20),
+        atomic64.compare_and_swap(101, 200)
+    );
     queue.enqueue(7);
     fifo.enqueue(9);
     println!("queue={:?} fifo={:?}", queue.dequeue(), fifo.dequeue());

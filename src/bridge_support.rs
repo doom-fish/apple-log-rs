@@ -24,12 +24,14 @@ pub fn bridge_ptr_result(
     f: impl FnOnce(ErrorOut) -> *mut c_void,
 ) -> Result<std::ptr::NonNull<c_void>, LogError> {
     bridge_result(f)?.pipe(|ptr| {
-        std::ptr::NonNull::new(ptr).ok_or_else(|| LogError::bridge(format!("{label} returned NULL")))
+        std::ptr::NonNull::new(ptr)
+            .ok_or_else(|| LogError::bridge(format!("{label} returned NULL")))
     })
 }
 
 pub fn c_string_arg(label: &str, value: &str) -> Result<CString, LogError> {
-    CString::new(value).map_err(|_| LogError::InvalidArgument(format!("{label} contained a NUL byte")))
+    CString::new(value)
+        .map_err(|_| LogError::InvalidArgument(format!("{label} contained a NUL byte")))
 }
 
 pub fn sanitized_c_string(value: &str) -> CString {

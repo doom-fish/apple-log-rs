@@ -105,7 +105,10 @@ fn os_atomic_symbols_present_in_header() {
     }
     let queue_header = read_header("usr/include/libkern/OSAtomicQueue.h");
     for sym in &["OSAtomicEnqueue", "OSAtomicDequeue", "OSQueueHead"] {
-        assert!(queue_header.contains(sym), "OSAtomicQueue.h missing {sym:?}");
+        assert!(
+            queue_header.contains(sym),
+            "OSAtomicQueue.h missing {sym:?}"
+        );
     }
 }
 

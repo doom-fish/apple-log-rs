@@ -40,7 +40,9 @@ impl OSLogEntryLog {
 
     #[must_use]
     pub fn level(&self) -> OSLogEntryLogLevel {
-        OSLogEntryLogLevel::from_raw(unsafe { ffi::apple_log_os_log_entry_level(self.ptr.as_ptr()) })
+        OSLogEntryLogLevel::from_raw(unsafe {
+            ffi::apple_log_os_log_entry_level(self.ptr.as_ptr())
+        })
     }
 }
 
