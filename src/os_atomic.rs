@@ -16,81 +16,170 @@ impl OSAtomicI32 {
     #[must_use]
     pub fn new(value: i32) -> Self {
         Self {
-            ptr: NonNull::new(unsafe { ffi::apple_log_os_atomic_i32_new(value) })
-                .expect("Swift bridge never returns NULL for OSAtomicI32::new"),
+            ptr: NonNull::new(unsafe {
+                // SAFETY: ffi::apple_log_os_atomic_i32_new is a thin wrapper that
+                // returns a non-null OSAtomicI32 handle. It is safe to call and always
+                // returns a valid pointer from the Swift bridge.
+                ffi::apple_log_os_atomic_i32_new(value)
+            })
+            .expect("Swift bridge never returns NULL for OSAtomicI32::new"),
         }
     }
 
     #[must_use]
     pub fn load(&self) -> i32 {
-        unsafe { ffi::apple_log_os_atomic_i32_load(self.ptr.as_ptr()) }
+        unsafe {
+            // SAFETY: self.ptr is a valid non-null OSAtomicI32 pointer.
+            // This is a read-only atomic load operation.
+            ffi::apple_log_os_atomic_i32_load(self.ptr.as_ptr())
+        }
     }
 
     pub fn store(&self, value: i32) {
-        unsafe { ffi::apple_log_os_atomic_i32_store(self.ptr.as_ptr(), value) };
+        unsafe {
+            // SAFETY: self.ptr is a valid non-null OSAtomicI32 pointer.
+            // This is an atomic store operation.
+            ffi::apple_log_os_atomic_i32_store(self.ptr.as_ptr(), value);
+        }
     }
 
     pub fn add(&self, amount: i32) -> i32 {
-        unsafe { ffi::apple_log_os_atomic_i32_add(self.ptr.as_ptr(), amount) }
+        unsafe {
+            // SAFETY: self.ptr is a valid non-null OSAtomicI32 pointer.
+            // This is an atomic add operation.
+            ffi::apple_log_os_atomic_i32_add(self.ptr.as_ptr(), amount)
+        }
     }
     pub fn add_barrier(&self, amount: i32) -> i32 {
-        unsafe { ffi::apple_log_os_atomic_i32_add_barrier(self.ptr.as_ptr(), amount) }
+        unsafe {
+            // SAFETY: self.ptr is a valid non-null OSAtomicI32 pointer.
+            // This is an atomic add with memory barrier operation.
+            ffi::apple_log_os_atomic_i32_add_barrier(self.ptr.as_ptr(), amount)
+        }
     }
     pub fn increment(&self) -> i32 {
-        unsafe { ffi::apple_log_os_atomic_i32_increment(self.ptr.as_ptr()) }
+        unsafe {
+            // SAFETY: self.ptr is a valid non-null OSAtomicI32 pointer.
+            // This is an atomic increment operation.
+            ffi::apple_log_os_atomic_i32_increment(self.ptr.as_ptr())
+        }
     }
     pub fn increment_barrier(&self) -> i32 {
-        unsafe { ffi::apple_log_os_atomic_i32_increment_barrier(self.ptr.as_ptr()) }
+        unsafe {
+            // SAFETY: self.ptr is a valid non-null OSAtomicI32 pointer.
+            // This is an atomic increment with memory barrier operation.
+            ffi::apple_log_os_atomic_i32_increment_barrier(self.ptr.as_ptr())
+        }
     }
     pub fn decrement(&self) -> i32 {
-        unsafe { ffi::apple_log_os_atomic_i32_decrement(self.ptr.as_ptr()) }
+        unsafe {
+            // SAFETY: self.ptr is a valid non-null OSAtomicI32 pointer.
+            // This is an atomic decrement operation.
+            ffi::apple_log_os_atomic_i32_decrement(self.ptr.as_ptr())
+        }
     }
     pub fn decrement_barrier(&self) -> i32 {
-        unsafe { ffi::apple_log_os_atomic_i32_decrement_barrier(self.ptr.as_ptr()) }
+        unsafe {
+            // SAFETY: self.ptr is a valid non-null OSAtomicI32 pointer.
+            // This is an atomic decrement with memory barrier operation.
+            ffi::apple_log_os_atomic_i32_decrement_barrier(self.ptr.as_ptr())
+        }
     }
     pub fn or(&self, mask: u32) -> i32 {
-        unsafe { ffi::apple_log_os_atomic_i32_or(self.ptr.as_ptr(), mask) }
+        unsafe {
+            // SAFETY: self.ptr is a valid non-null OSAtomicI32 pointer.
+            // This is an atomic bitwise OR operation.
+            ffi::apple_log_os_atomic_i32_or(self.ptr.as_ptr(), mask)
+        }
     }
     pub fn or_barrier(&self, mask: u32) -> i32 {
-        unsafe { ffi::apple_log_os_atomic_i32_or_barrier(self.ptr.as_ptr(), mask) }
+        unsafe {
+            // SAFETY: self.ptr is a valid non-null OSAtomicI32 pointer.
+            // This is an atomic bitwise OR with memory barrier operation.
+            ffi::apple_log_os_atomic_i32_or_barrier(self.ptr.as_ptr(), mask)
+        }
     }
     pub fn or_orig(&self, mask: u32) -> i32 {
-        unsafe { ffi::apple_log_os_atomic_i32_or_orig(self.ptr.as_ptr(), mask) }
+        unsafe {
+            // SAFETY: self.ptr is a valid non-null OSAtomicI32 pointer.
+            // This is an atomic bitwise OR returning the original value.
+            ffi::apple_log_os_atomic_i32_or_orig(self.ptr.as_ptr(), mask)
+        }
     }
     pub fn or_orig_barrier(&self, mask: u32) -> i32 {
-        unsafe { ffi::apple_log_os_atomic_i32_or_orig_barrier(self.ptr.as_ptr(), mask) }
+        unsafe {
+            // SAFETY: self.ptr is a valid non-null OSAtomicI32 pointer.
+            // This is an atomic bitwise OR with barrier returning the original value.
+            ffi::apple_log_os_atomic_i32_or_orig_barrier(self.ptr.as_ptr(), mask)
+        }
     }
     pub fn and(&self, mask: u32) -> i32 {
-        unsafe { ffi::apple_log_os_atomic_i32_and(self.ptr.as_ptr(), mask) }
+        unsafe {
+            // SAFETY: self.ptr is a valid non-null OSAtomicI32 pointer.
+            // This is an atomic bitwise AND operation.
+            ffi::apple_log_os_atomic_i32_and(self.ptr.as_ptr(), mask)
+        }
     }
     pub fn and_barrier(&self, mask: u32) -> i32 {
-        unsafe { ffi::apple_log_os_atomic_i32_and_barrier(self.ptr.as_ptr(), mask) }
+        unsafe {
+            // SAFETY: self.ptr is a valid non-null OSAtomicI32 pointer.
+            // This is an atomic bitwise AND with memory barrier operation.
+            ffi::apple_log_os_atomic_i32_and_barrier(self.ptr.as_ptr(), mask)
+        }
     }
     pub fn and_orig(&self, mask: u32) -> i32 {
-        unsafe { ffi::apple_log_os_atomic_i32_and_orig(self.ptr.as_ptr(), mask) }
+        unsafe {
+            // SAFETY: self.ptr is a valid non-null OSAtomicI32 pointer.
+            // This is an atomic bitwise AND returning the original value.
+            ffi::apple_log_os_atomic_i32_and_orig(self.ptr.as_ptr(), mask)
+        }
     }
     pub fn and_orig_barrier(&self, mask: u32) -> i32 {
-        unsafe { ffi::apple_log_os_atomic_i32_and_orig_barrier(self.ptr.as_ptr(), mask) }
+        unsafe {
+            // SAFETY: self.ptr is a valid non-null OSAtomicI32 pointer.
+            // This is an atomic bitwise AND with barrier returning the original value.
+            ffi::apple_log_os_atomic_i32_and_orig_barrier(self.ptr.as_ptr(), mask)
+        }
     }
     pub fn xor(&self, mask: u32) -> i32 {
-        unsafe { ffi::apple_log_os_atomic_i32_xor(self.ptr.as_ptr(), mask) }
+        unsafe {
+            // SAFETY: self.ptr is a valid non-null OSAtomicI32 pointer.
+            // This is an atomic bitwise XOR operation.
+            ffi::apple_log_os_atomic_i32_xor(self.ptr.as_ptr(), mask)
+        }
     }
     pub fn xor_barrier(&self, mask: u32) -> i32 {
-        unsafe { ffi::apple_log_os_atomic_i32_xor_barrier(self.ptr.as_ptr(), mask) }
+        unsafe {
+            // SAFETY: self.ptr is a valid non-null OSAtomicI32 pointer.
+            // This is an atomic bitwise XOR with memory barrier operation.
+            ffi::apple_log_os_atomic_i32_xor_barrier(self.ptr.as_ptr(), mask)
+        }
     }
     pub fn xor_orig(&self, mask: u32) -> i32 {
-        unsafe { ffi::apple_log_os_atomic_i32_xor_orig(self.ptr.as_ptr(), mask) }
+        unsafe {
+            // SAFETY: self.ptr is a valid non-null OSAtomicI32 pointer.
+            // This is an atomic bitwise XOR returning the original value.
+            ffi::apple_log_os_atomic_i32_xor_orig(self.ptr.as_ptr(), mask)
+        }
     }
     pub fn xor_orig_barrier(&self, mask: u32) -> i32 {
-        unsafe { ffi::apple_log_os_atomic_i32_xor_orig_barrier(self.ptr.as_ptr(), mask) }
+        unsafe {
+            // SAFETY: self.ptr is a valid non-null OSAtomicI32 pointer.
+            // This is an atomic bitwise XOR with barrier returning the original value.
+            ffi::apple_log_os_atomic_i32_xor_orig_barrier(self.ptr.as_ptr(), mask)
+        }
     }
     pub fn compare_and_swap(&self, old_value: i32, new_value: i32) -> bool {
         unsafe {
+            // SAFETY: self.ptr is a valid non-null OSAtomicI32 pointer.
+            // This is an atomic compare-and-swap operation.
             ffi::apple_log_os_atomic_i32_compare_and_swap(self.ptr.as_ptr(), old_value, new_value)
         }
     }
     pub fn compare_and_swap_barrier(&self, old_value: i32, new_value: i32) -> bool {
         unsafe {
+            // SAFETY: self.ptr is a valid non-null OSAtomicI32 pointer.
+            // This is an atomic compare-and-swap with memory barrier operation.
             ffi::apple_log_os_atomic_i32_compare_and_swap_barrier(
                 self.ptr.as_ptr(),
                 old_value,

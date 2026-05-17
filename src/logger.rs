@@ -43,8 +43,13 @@ pub struct Logger {
 impl Logger {
     fn bridge_default() -> Self {
         Self {
-            ptr: NonNull::new(unsafe { ffi::apple_log_logger_default() })
-                .expect("Swift bridge never returns NULL for Logger.default"),
+            ptr: NonNull::new(unsafe {
+                // SAFETY: ffi::apple_log_logger_default is a thin wrapper that returns
+                // a non-null OSLog/Logger handle from the Swift bridge. It is safe to call
+                // and always returns a valid pointer.
+                ffi::apple_log_logger_default()
+            })
+            .expect("Swift bridge never returns NULL for Logger.default"),
         }
     }
 
@@ -57,6 +62,9 @@ impl Logger {
         let subsystem = c_string_arg("subsystem", subsystem)?;
         let category = c_string_arg("category", category)?;
         let ptr = bridge_ptr_result("Logger::new", |error_out| unsafe {
+            // SAFETY: c_string_arg validates both arguments are valid C strings.
+            // The Swift bridge ffi::apple_log_logger_create is thread-safe and takes
+            // valid C pointers plus an error_out pointer populated by bridge_ptr_result.
             ffi::apple_log_logger_create(subsystem.as_ptr(), category.as_ptr(), error_out)
         })?;
         Ok(Self { ptr })
@@ -69,6 +77,8 @@ impl Logger {
     /// Returns an error if the bridge fails to create the logger wrapper.
     pub fn from_os_log(log: &OSLog) -> Result<Self, LogError> {
         let ptr = bridge_ptr_result("Logger::from_os_log", |error_out| unsafe {
+            // SAFETY: log.as_ptr() returns a valid OSLog pointer from the OSLog wrapper.
+            // The Swift bridge is thread-safe and error_out is populated by bridge_ptr_result.
             ffi::apple_log_logger_from_os_log(log.as_ptr(), error_out)
         })?;
         Ok(Self { ptr })
@@ -84,14 +94,22 @@ impl Logger {
     #[must_use]
     pub fn disabled() -> Self {
         Self {
-            ptr: NonNull::new(unsafe { ffi::apple_log_logger_disabled() })
-                .expect("Swift bridge never returns NULL for Logger.disabled"),
+            ptr: NonNull::new(unsafe {
+                // SAFETY: ffi::apple_log_logger_disabled is a thin wrapper that returns
+                // a non-null Logger handle from the Swift bridge. It is safe to call
+                // and always returns a valid pointer.
+                ffi::apple_log_logger_disabled()
+            })
+            .expect("Swift bridge never returns NULL for Logger.disabled"),
         }
     }
 
     fn write(&self, severity: i32, privacy: Privacy, message: &str) {
         let message = sanitized_c_string(message);
         unsafe {
+            // SAFETY: self.ptr is a valid non-null Logger pointer from the Swift bridge.
+            // sanitized_c_string validates the message is a valid C string.
+            // The function is thread-safe and does not mutate through self.
             ffi::apple_log_logger_log(self.ptr.as_ptr(), severity, privacy.raw(), message.as_ptr());
         }
     }
@@ -141,19 +159,30 @@ impl Logger {
     /// Returns whether the underlying `OSLog` handle enables this classic level.
     #[must_use]
     pub fn is_enabled(&self, level: Level) -> bool {
-        unsafe { ffi::apple_log_logger_is_enabled(self.ptr.as_ptr(), level as u8) }
+        unsafe {
+            // SAFETY: self.ptr is a valid non-null Logger pointer. The FFI function
+            // is a read-only query and safe to call from any thread.
+            ffi::apple_log_logger_is_enabled(self.ptr.as_ptr(), level as u8)
+        }
     }
 
     /// Generates a signpost identifier associated with this logger's log handle.
     #[must_use]
     pub fn signpost_id(&self) -> OSSignpostId {
-        OSSignpostId::from_u64(unsafe { ffi::apple_log_logger_signpost_id(self.ptr.as_ptr()) })
+        OSSignpostId::from_u64(unsafe {
+            // SAFETY: self.ptr is a valid non-null Logger pointer.
+            // This is a read-only operation that generates a signpost ID.
+            ffi::apple_log_logger_signpost_id(self.ptr.as_ptr())
+        })
     }
 
     /// Generates a signpost identifier derived from a pointer.
     #[must_use]
     pub fn signpost_id_from_pointer<T>(&self, pointer: *const T) -> OSSignpostId {
         OSSignpostId::from_u64(unsafe {
+            // SAFETY: self.ptr is a valid non-null Logger pointer. The pointer argument
+            // is cast to c_void which is safe for any pointer type. The function only
+            // reads from the pointer value (not dereferences it) to generate a signpost ID.
             ffi::apple_log_logger_signpost_id_from_pointer(self.ptr.as_ptr(), pointer.cast())
         })
     }
@@ -161,13 +190,19 @@ impl Logger {
     /// Returns whether signposts are enabled for this logger's log handle.
     #[must_use]
     pub fn signposts_enabled(&self) -> bool {
-        unsafe { ffi::apple_log_logger_signposts_enabled(self.ptr.as_ptr()) }
+        unsafe {
+            // SAFETY: self.ptr is a valid non-null Logger pointer.
+            // This is a read-only query that is safe to call from any thread.
+            ffi::apple_log_logger_signposts_enabled(self.ptr.as_ptr())
+        }
     }
 
     pub fn signpost_event(&self, id: OSSignpostId, name: &str, message: &str) {
         let name = sanitized_c_string(name);
         let message = sanitized_c_string(message);
         unsafe {
+            // SAFETY: self.ptr is a valid non-null Logger pointer. Both name and message
+            // are validated as proper C strings by sanitized_c_string. The function is thread-safe.
             ffi::apple_log_logger_signpost_event(
                 self.ptr.as_ptr(),
                 id.as_u64(),
@@ -180,6 +215,8 @@ impl Logger {
     pub fn signpost_interval_begin(&self, id: OSSignpostId, name: &str) {
         let name = sanitized_c_string(name);
         unsafe {
+            // SAFETY: self.ptr is a valid non-null Logger pointer. name is validated
+            // as a proper C string by sanitized_c_string. The function is thread-safe.
             ffi::apple_log_logger_signpost_interval_begin(
                 self.ptr.as_ptr(),
                 id.as_u64(),
@@ -191,6 +228,8 @@ impl Logger {
     pub fn signpost_animation_interval_begin(&self, id: OSSignpostId, name: &str) {
         let name = sanitized_c_string(name);
         unsafe {
+            // SAFETY: self.ptr is a valid non-null Logger pointer. name is validated
+            // as a proper C string by sanitized_c_string. The function is thread-safe.
             ffi::apple_log_logger_signpost_animation_interval_begin(
                 self.ptr.as_ptr(),
                 id.as_u64(),
@@ -202,6 +241,8 @@ impl Logger {
     pub fn signpost_interval_end(&self, id: OSSignpostId, name: &str) {
         let name = sanitized_c_string(name);
         unsafe {
+            // SAFETY: self.ptr is a valid non-null Logger pointer. name is validated
+            // as a proper C string by sanitized_c_string. The function is thread-safe.
             ffi::apple_log_logger_signpost_interval_end(
                 self.ptr.as_ptr(),
                 id.as_u64(),
@@ -223,6 +264,11 @@ impl Default for Logger {
 
 impl Drop for Logger {
     fn drop(&mut self) {
-        unsafe { ffi::apple_log_logger_release(self.ptr.as_ptr()) };
+        unsafe {
+            // SAFETY: self.ptr is a valid non-null Logger pointer that was created by
+            // the Swift bridge. apple_log_logger_release is safe to call exactly once
+            // per Logger and properly cleans up the Swift bridge reference count.
+            ffi::apple_log_logger_release(self.ptr.as_ptr());
+        }
     }
 }
