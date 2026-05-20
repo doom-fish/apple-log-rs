@@ -2,6 +2,9 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![allow(clippy::module_name_repetitions)]
 
+#[cfg(feature = "async")]
+#[cfg_attr(docsrs, doc(cfg(feature = "async")))]
+pub mod async_api;
 pub mod error;
 pub mod ffi;
 pub mod log;

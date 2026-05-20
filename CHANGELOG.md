@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.6.0] - 2026-05-20
+
+### Added
+
+- `async` feature plus `async_api::ActivityFuture`, an executor-agnostic wrapper that enters an `OSActivity` around every future poll.
+- `OSActivity::instrument_future` plus refreshed OSActivity async instrumentation docs and examples.
+
+### Notes
+
+- Phase 32 completeness + async sweep.
+
 ## [0.5.2] - 2025-01-09
 
 ### Changed

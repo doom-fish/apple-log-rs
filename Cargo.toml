@@ -1,6 +1,6 @@
 [package]
 name = "apple-log"
-version = "0.5.2"
+version = "0.6.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 homepage = "https://github.com/doom-fish/apple-log-rs"
@@ -29,6 +29,7 @@ include = [
 [features]
 default = ["raw-ffi"]
 raw-ffi = []
+async = []
 
 [lints.rust]
 
@@ -45,6 +46,7 @@ crate-type = ["lib"]
 
 [dev-dependencies]
 regex-lite = "0.1"
+pollster = "0.3"
 
 [package.metadata.docs.rs]
 all-features = true

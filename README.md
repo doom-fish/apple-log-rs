@@ -2,7 +2,7 @@
 
 Safe Rust bindings for Apple's unified logging stack on macOS.
 
-`apple-log` v0.5 adds a Swift bridge on top of the C `os` APIs and the Swift `os` / `OSLog` modules, covering:
+`apple-log` v0.6 adds a Swift bridge on top of the C `os` APIs and the Swift `os` / `OSLog` modules, covering:
 
 - `Logger`
 - `OSLog`
@@ -68,6 +68,32 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 ## Raw C FFI
 
 The crate keeps the low-level C shim behind the `raw-ffi` feature. The feature is enabled by default for backwards compatibility.
+
+## Async activity instrumentation
+
+Enable the `async` feature to wrap any executor-agnostic future in an `OSActivity` scope that is re-entered on every poll.
+
+```toml
+[dependencies]
+apple-log = { version = "0.6", features = ["async"] }
+```
+
+```rust,no_run
+use apple_log::{OSActivity, OSActivityFlags};
+
+# async fn run() -> Result<(), Box<dyn std::error::Error>> {
+let bytes = OSActivity::new(
+    "download asset",
+    Some(&OSActivity::current()),
+    OSActivityFlags::DEFAULT,
+)?
+.instrument_future(async { 42_usize })
+.await?;
+
+assert_eq!(bytes, 42);
+# Ok(())
+# }
+```
 
 ```toml
 [dependencies]

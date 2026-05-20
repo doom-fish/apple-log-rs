@@ -32,6 +32,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         |message| Logger::default().info(message.as_str()),
     )?;
 
+    #[cfg(feature = "async")]
+    {
+        let async_message = pollster::block_on(
+            OSActivity::new(
+                "example-async-activity",
+                Some(&OSActivity::current()),
+                OSActivityFlags::DEFAULT,
+            )?
+            .instrument_future(async {
+                Logger::default().info("inside async future");
+                "inside async future"
+            }),
+        )?;
+        Logger::default().info(async_message);
+    }
+
     OSActivity::label_user_action("example action");
     OSActivity::set_breadcrumb("example breadcrumb");
     Ok(())

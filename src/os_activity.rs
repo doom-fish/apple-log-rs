@@ -8,6 +8,8 @@ use std::ptr::NonNull;
 use crate::bridge_support::{bridge_ptr_result, c_string_arg, sanitized_c_string};
 use crate::error::LogError;
 use crate::ffi;
+#[cfg(feature = "async")]
+use std::future::Future;
 
 /// Current activity id plus its optional parent id.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -264,6 +266,16 @@ impl OSActivity {
         if let Some(panic) = context.panic {
             resume_unwind(panic);
         }
+    }
+
+    /// Wrap a future so this activity is entered around every poll.
+    #[cfg(feature = "async")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "async")))]
+    pub const fn instrument_future<F>(self, future: F) -> crate::async_api::ActivityFuture<F>
+    where
+        F: Future,
+    {
+        crate::async_api::ActivityFuture::new(self, future)
     }
 
     /// Enters the activity for the current scope.
