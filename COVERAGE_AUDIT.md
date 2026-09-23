@@ -6,6 +6,11 @@ GAPS: 0
 EXEMPT: 9
 COVERAGE_PCT: 100.00%
 
+Measurement notes:
+- Generated against MacOSX26.2.sdk and not regenerated for the installed 26.5/27.0 SDKs.
+- Scope is the C headers `os/log.h`, `os/signpost.h` and `os/activity.h` only. The Swift `OSLog` module (`OSLogStore`, `Logger`, `OSSignposter`) is tracked in `COVERAGE.md`.
+- `SDK_PUBLIC_SYMBOLS` excludes the 9 EXEMPT symbols, so `COVERAGE_PCT` is VERIFIED / SDK_PUBLIC_SYMBOLS over non-exempt symbols; macros count as covered when a safe wrapper provides the same behavior.
+
 Scope notes:
 - Counted documented macro entrypoints and macro constants alongside typedefs and exported functions because `os/log.h`, `os/signpost.h`, and `os/activity.h` expose much of their public surface that way.
 - Treated the safe Rust message-based wrappers as coverage for the corresponding C macros even though the SDK's compile-time format-string machinery is not exposed 1:1.

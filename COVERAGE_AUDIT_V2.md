@@ -6,6 +6,11 @@ GAPS: 0
 EXEMPT: 9
 COVERAGE_PCT: 100.00%
 
+Measurement notes:
+- Generated against MacOSX26.2.sdk and not regenerated for the installed 26.5/27.0 SDKs.
+- Scope is the C headers `os/log.h`, `os/signpost.h` and `os/activity.h` only. The Swift `OSLog` module (`OSLogStore`, `Logger`, `OSSignposter`) is tracked in `COVERAGE.md`.
+- `COVERAGE_PCT` is VERIFIED / (SDK_PUBLIC_SYMBOLS − EXEMPT); macros count as covered when a safe wrapper provides the same behavior.
+
 ## Methodology
 
 This audit enumerates the public macOS API surface of `os/log.h`, `os/signpost.h`, and `os/activity.h` (C umbrella headers from the `os/log` system library), cross-references them with `apple-log`'s Rust safe wrappers and Swift bridge, and classifies each symbol.

@@ -1,13 +1,10 @@
-# apple-log v0.5.1 coverage audit
+# apple-log coverage audit
 
 Reference inputs:
 
 - `usr/include/os/log.h`
 - `usr/include/os/signpost.h`
 - `usr/include/os/activity.h`
-- `usr/include/libkern/OSAtomic.h`
-- `usr/include/libkern/OSAtomicDeprecated.h`
-- `usr/include/libkern/OSAtomicQueue.h`
 - Swift symbol graphs for modules `os` and `OSLog`
 
 Legend:
@@ -33,6 +30,8 @@ Legend:
 | `Logger.error(_:)` | ✅ | `Logger::error` |
 | `Logger.critical(_:)` | ✅ | `Logger::critical` |
 | `Logger.fault(_:)` | ✅ | `Logger::fault` |
+
+String payloads are logged as private; `Logger::log_with_privacy` with `Privacy::Public` opts into clear text.
 
 ## OSLog (`os` Swift module + `os/log.h`)
 
@@ -64,7 +63,7 @@ Legend:
 | `OSLogStore.position(timeIntervalSinceLatestBoot:)` | ✅ | `OSLogStore::position_time_interval_since_latest_boot` |
 | `OSLogStore.Scope.system` | ✅ | `OSLogStoreScope::System` |
 | `OSLogStore.Scope.currentProcessIdentifier` | ✅ | `OSLogStoreScope::CurrentProcessIdentifier` |
-| `OSLogStore.getEntries(with:at:matching:)` | ✅ | `OSLogStore::get_entries` / `entries` |
+| `OSLogStore.getEntries(with:at:matching:)` | ✅ | `OSLogStore::get_entries` / `entries` with an `OSLogEntryFilter` (subsystem, category, minimum level, date range) built from `%K`/`%@` arguments and a `max_entries` bound; `OSLogStore::get_entries_with_predicate` for raw predicate formats, parsed inside `@try/@catch` so invalid input returns an error |
 | `OSLogEnumerator.Options.reverse` | ✅ | `OSLogEnumeratorOptions::REVERSE` |
 | `OSLogPosition` | ✅ | `OSLogPosition` wrapper |
 | `OSLogEntry.date` | ✅ | `OSLogEntryCommon::date` |
@@ -116,10 +115,10 @@ Legend:
 | `OSSignposter.isEnabled` | ✅ | `OSSignposter::is_enabled` |
 | `OSSignposter.makeSignpostID()` | ✅ | `OSSignposter::make_signpost_id` |
 | `OSSignposter.makeSignpostID(from:)` | ✅ | `OSSignposter::make_signpost_id_from_pointer` |
-| `OSSignposter.emitEvent` | ✅ | `OSSignposter::emit_event` |
-| `OSSignposter.beginInterval` | ✅ | `OSSignposter::begin_interval` |
-| `OSSignposter.beginAnimationInterval` | ✅ | `OSSignposter::begin_animation_interval` |
-| `OSSignposter.endInterval` | ✅ | `OSSignposter::end_interval` |
+| `OSSignposter.emitEvent` | ✅ | `OSSignposter::emit_event` / `emit_event_with_privacy` |
+| `OSSignposter.beginInterval` | ✅ | `OSSignposter::begin_interval` / `begin_interval_with_privacy` |
+| `OSSignposter.beginAnimationInterval` | ✅ | `OSSignposter::begin_animation_interval` / `begin_animation_interval_with_privacy` |
+| `OSSignposter.endInterval` | ✅ | `OSSignposter::end_interval` / `end_interval_with_privacy` |
 | `OSSignposter.withIntervalSignpost` | ✅ | `OSSignposter::with_interval_signpost` |
 | `os_signpost_id_generate` | ✅ | safe + raw |
 | `os_signpost_id_make_with_pointer` | ✅ | safe + raw |
@@ -129,6 +128,8 @@ Legend:
 | `os_signpost_animation_interval_begin` | ✅ | safe + raw |
 | `os_signpost_interval_end` | ✅ | safe + raw |
 | `OS_LOG_CATEGORY_*` | ✅ | category constants |
+
+Signpost names are `&'static CStr` literals, as the SDK requires string constants; messages are private unless a `*_with_privacy` method passes `Privacy::Public`.
 
 ## OSActivity (`os/activity.h`)
 
@@ -150,29 +151,7 @@ Legend:
 
 ## OSAtomic (`libkern/OSAtomic*.h`)
 
-| API | Status | Notes |
-| --- | --- | --- |
-| `OSAtomicAdd32` / `Barrier` | ✅ | `OSAtomicI32::{add,add_barrier}` + raw |
-| `OSAtomicIncrement32` / `Barrier` | ✅ | `OSAtomicI32::{increment,increment_barrier}` + raw |
-| `OSAtomicDecrement32` / `Barrier` | ✅ | `OSAtomicI32::{decrement,decrement_barrier}` + raw |
-| `OSAtomicOr32` / `Barrier` | ✅ | `OSAtomicI32::{or,or_barrier}` + raw |
-| `OSAtomicOr32Orig` / `Barrier` | ✅ | `OSAtomicI32::{or_orig,or_orig_barrier}` + raw |
-| `OSAtomicAnd32` / `Barrier` | ✅ | `OSAtomicI32::{and,and_barrier}` + raw |
-| `OSAtomicAnd32Orig` / `Barrier` | ✅ | `OSAtomicI32::{and_orig,and_orig_barrier}` + raw |
-| `OSAtomicXor32` / `Barrier` | ✅ | `OSAtomicI32::{xor,xor_barrier}` + raw |
-| `OSAtomicXor32Orig` / `Barrier` | ✅ | `OSAtomicI32::{xor_orig,xor_orig_barrier}` + raw |
-| `OSAtomicCompareAndSwap32` / `Barrier` | ✅ | `OSAtomicI32::{compare_and_swap,compare_and_swap_barrier}` + raw |
-| `OSAtomicAdd64` / `Barrier` | ✅ | `OSAtomicI64::{add,add_barrier}` + raw |
-| `OSAtomicIncrement64` / `Barrier` | ✅ | `OSAtomicI64::{increment,increment_barrier}` + raw |
-| `OSAtomicDecrement64` / `Barrier` | ✅ | `OSAtomicI64::{decrement,decrement_barrier}` + raw |
-| `OSAtomicCompareAndSwap64` / `Barrier` | ✅ | `OSAtomicI64::{compare_and_swap,compare_and_swap_barrier}` + raw |
-| `OSAtomicCompareAndSwapInt` / `Barrier` | ✅ | raw `ffi::apple_os_atomic_compare_and_swap_int*` |
-| `OSAtomicCompareAndSwapLong` / `Barrier` | ✅ | raw `ffi::apple_os_atomic_compare_and_swap_long*` |
-| `OSAtomicCompareAndSwapPtr` / `Barrier` | ✅ | raw `ffi::apple_os_atomic_compare_and_swap_ptr*` |
-| `OSAtomicTestAndSet` / `Barrier` | ✅ | raw `ffi::apple_os_atomic_test_and_set*` |
-| `OSAtomicTestAndClear` / `Barrier` | ✅ | raw `ffi::apple_os_atomic_test_and_clear*` |
-| `OSAtomicEnqueue` / `OSAtomicDequeue` | ✅ | `OSAtomicQueue` + raw queue helpers |
-| `OSAtomicFifoEnqueue` / `OSAtomicFifoDequeue` | ✅ | `OSAtomicFifoQueue` + raw queue helpers |
+Removed in 0.7.0. The OSAtomic functions are deprecated since macOS 10.12 and the FIFO queue is no longer supported since macOS 11. The former wrappers were `!Send`/`!Sync`, loaded and stored with plain accesses, and freed queue nodes that concurrent dequeuers could still read. Use `std::sync::atomic` instead.
 
 ## Intentionally skipped Swift compile-time logging helpers
 

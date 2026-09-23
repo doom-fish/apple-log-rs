@@ -26,8 +26,8 @@ use apple_log::prelude::*;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let logger = Logger::new("fish.doom.myapp", "network")?;
-    logger.info("booting service");
-    logger.log_with_privacy(Level::Info, "token=secret", Privacy::Private);
+    logger.info("user@example.com signed in");
+    logger.log_with_privacy(Level::Info, "cache warmed", Privacy::Public);
 
     let signposter = OSSignposter::new("fish.doom.myapp", CATEGORY_POINTS_OF_INTEREST)?;
     let signpost_id = signposter.make_signpost_id();
@@ -45,20 +45,51 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let entries = store.entries(
         OSLogEnumeratorOptions::REVERSE,
         Some(&store.position_time_interval_since_end(Duration::from_secs(5))),
-        &OSLogEntryFilter::default(),
+        &OSLogEntryFilter::default()
+            .subsystem("fish.doom.myapp")
+            .min_level(Level::Error),
         1_000,
     )?;
-    println!("recent entries: {}", entries.len());
+    println!("recent errors: {}", entries.len());
 
     Ok(())
 }
 ```
 
+## Privacy
+
+Messages are logged as private unless you opt in. `Logger::log`, the `trace`..`fault`
+convenience calls, the `log` free function, signpost messages and the raw
+`apple_log_emit`/`apple_log_emit_default` shim functions all redact the message as
+`<private>` in the unified log (unless private data logging is enabled on the machine).
+Use `log_with_privacy(.., Privacy::Public)` or the `*_with_privacy` signpost methods
+for text that is safe to store in clear.
+
+## Signpost and activity names
+
+Signpost names, activity descriptions, user-action labels and breadcrumbs are
+`&'static CStr`. Pass string literals such as `c"startup"`: the unified log records
+only the location of these strings and decodes them from the binary, so text built at
+run time cannot be decoded. Each signpost call emits exactly one signpost, and
+`OSSignpostInterval` remembers the name its interval began with.
+
+## Reading the log store
+
+`OSLogStore::get_entries` takes an `OSLogEntryFilter` (subsystem, category, minimum
+level, date range) and a `max_entries` bound. Filter values are passed to the
+predicate as arguments, never as predicate syntax. `get_entries_with_predicate`
+accepts a raw `NSPredicate` format string for other queries; invalid predicates
+return an error instead of aborting the process.
+
+`OSLogStoreScope::CurrentProcessIdentifier` reads the calling process's own entries.
+`OSLogStore::local()` and `OSLogStoreScope::System` read the whole system log and can
+fail with a permission error for users who are not administrators.
+
 ## Areas and modules
 
 - `apple_log::logger::Logger` and compatibility free functions in `apple_log::log`
 - `apple_log::os_log::OSLog`
-- `apple_log::os_log_store::{OSLogStore, OSLogPosition, OSLogStoreEntry}`
+- `apple_log::os_log_store::{OSLogStore, OSLogEntryFilter, OSLogPosition, OSLogStoreEntry}`
 - `apple_log::os_log_entry_*` typed entry wrappers
 - `apple_log::os_signpost_id::OSSignpostId`
 - `apple_log::os_signposter::OSSignposter`
@@ -67,6 +98,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 ## Raw C FFI
 
 The crate keeps the low-level C shim behind the `raw-ffi` feature. The feature is enabled by default for backwards compatibility.
+
+```toml
+[dependencies]
+apple-log = { version = "0.5", default-features = false }
+```
+
+Enable `raw-ffi` when you want direct access to the wrapped C symbols under `apple_log::ffi`.
 
 ## Async activity instrumentation
 
@@ -93,13 +131,6 @@ assert_eq!(bytes, 42);
 # Ok(())
 # }
 ```
-
-```toml
-[dependencies]
-apple-log = { version = "0.5", default-features = false }
-```
-
-Enable `raw-ffi` when you want direct access to the wrapped C symbols under `apple_log::ffi`.
 
 ## Examples
 
