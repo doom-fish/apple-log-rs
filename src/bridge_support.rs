@@ -64,13 +64,23 @@ pub unsafe fn take_owned_bytes(ptr: *mut c_void, len: usize) -> Vec<u8> {
 }
 
 pub fn system_time_to_secs(time: SystemTime) -> f64 {
-    time.duration_since(UNIX_EPOCH)
-        .unwrap_or(Duration::ZERO)
-        .as_secs_f64()
+    match time.duration_since(UNIX_EPOCH) {
+        Ok(elapsed) => elapsed.as_secs_f64(),
+        Err(error) => -error.duration().as_secs_f64(),
+    }
 }
 
 pub fn secs_to_system_time(seconds: f64) -> SystemTime {
-    UNIX_EPOCH + Duration::from_secs_f64(seconds.max(0.0))
+    Duration::try_from_secs_f64(seconds.abs())
+        .ok()
+        .and_then(|offset| {
+            if seconds.is_sign_negative() {
+                UNIX_EPOCH.checked_sub(offset)
+            } else {
+                UNIX_EPOCH.checked_add(offset)
+            }
+        })
+        .unwrap_or(UNIX_EPOCH)
 }
 
 pub trait Pipe: Sized {
@@ -80,3 +90,46 @@ pub trait Pipe: Sized {
 }
 
 impl<T> Pipe for T {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn secs_to_system_time_never_panics_on_invalid_dates() {
+        for seconds in [
+            f64::INFINITY,
+            f64::NEG_INFINITY,
+            f64::NAN,
+            f64::MAX,
+            f64::MIN,
+            1e300,
+        ] {
+            assert_eq!(secs_to_system_time(seconds), UNIX_EPOCH, "{seconds}");
+        }
+    }
+
+    #[test]
+    fn secs_to_system_time_handles_dates_on_both_sides_of_the_epoch() {
+        assert_eq!(
+            secs_to_system_time(1.5),
+            UNIX_EPOCH + Duration::from_millis(1500)
+        );
+        assert_eq!(
+            secs_to_system_time(-2.0),
+            UNIX_EPOCH - Duration::from_secs(2)
+        );
+        assert_eq!(secs_to_system_time(-0.0), UNIX_EPOCH);
+    }
+
+    #[test]
+    #[allow(clippy::float_cmp)]
+    fn system_time_to_secs_is_signed() {
+        let before = UNIX_EPOCH - Duration::from_secs(10);
+        let after = UNIX_EPOCH + Duration::from_secs(10);
+        assert_eq!(system_time_to_secs(before), -10.0);
+        assert_eq!(system_time_to_secs(after), 10.0);
+        assert_eq!(secs_to_system_time(system_time_to_secs(before)), before);
+        assert_eq!(secs_to_system_time(system_time_to_secs(after)), after);
+    }
+}
