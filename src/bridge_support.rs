@@ -11,7 +11,7 @@ pub type ErrorOut = *mut *mut c_char;
 
 pub fn bridge_result<T>(f: impl FnOnce(ErrorOut) -> T) -> Result<T, LogError> {
     let mut error = ptr::null_mut();
-    let value = f(&mut error);
+    let value = f(&raw mut error);
     if error.is_null() {
         Ok(value)
     } else {

@@ -217,8 +217,9 @@ impl OSActivity {
     #[must_use]
     pub fn identifiers(&self) -> ActivityIds {
         let mut parent = 0_u64;
-        let current =
-            unsafe { ffi::apple_log_os_activity_get_identifier(self.ptr.as_ptr(), &mut parent) };
+        let current = unsafe {
+            ffi::apple_log_os_activity_get_identifier(self.ptr.as_ptr(), &raw mut parent)
+        };
         ActivityIds {
             current,
             parent: (parent != 0).then_some(parent),
@@ -308,7 +309,7 @@ pub fn active_activity_id() -> u64 {
 #[must_use]
 pub fn active_activity_ids() -> ActivityIds {
     let mut parent = 0_u64;
-    let current = unsafe { ffi::apple_log_os_activity_get_active_identifiers(&mut parent) };
+    let current = unsafe { ffi::apple_log_os_activity_get_active_identifiers(&raw mut parent) };
     ActivityIds {
         current,
         parent: (parent != 0).then_some(parent),

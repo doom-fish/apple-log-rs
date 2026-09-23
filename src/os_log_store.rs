@@ -275,7 +275,7 @@ impl OSLogMessageComponent {
                     take_owned_bytes(
                         ffi::apple_log_os_log_message_component_copy_data(
                             self.ptr.as_ptr(),
-                            &mut length,
+                            &raw mut length,
                         ),
                         length.max(0) as usize,
                     )
