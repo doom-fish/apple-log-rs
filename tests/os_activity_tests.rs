@@ -50,3 +50,33 @@ fn os_activity_smoke() {
     OSActivity::label_user_action(c"activity smoke");
     OSActivity::set_breadcrumb(c"activity breadcrumb");
 }
+
+const fn assert_send_sync<T: Send + Sync>() {}
+
+#[test]
+fn activities_can_be_applied_on_other_threads() {
+    assert_send_sync::<OSActivity>();
+    let activity =
+        OSActivity::new(c"cross-thread", None, OSActivityFlags::DEFAULT).expect("activity");
+    let expected = activity.identifier();
+    assert_ne!(expected, 0);
+    let observed = std::thread::spawn(move || {
+        let mut inside = 0;
+        activity.apply(|| inside = active_activity_id());
+        inside
+    })
+    .join()
+    .expect("thread");
+    assert_eq!(observed, expected);
+}
+
+#[cfg(feature = "async")]
+#[test]
+fn instrumented_futures_are_send() {
+    const fn assert_send<T: Send>(_: &T) {}
+    let future = OSActivity::new(c"async-send", None, OSActivityFlags::DEFAULT)
+        .expect("activity")
+        .instrument_future(async { 1 });
+    assert_send(&future);
+    assert_eq!(pollster::block_on(future).expect("poll"), 1);
+}

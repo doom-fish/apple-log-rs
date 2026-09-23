@@ -289,6 +289,9 @@ impl OSActivity {
     }
 }
 
+unsafe impl Send for OSActivity {}
+unsafe impl Sync for OSActivity {}
+
 impl Drop for OSActivity {
     fn drop(&mut self) {
         unsafe { ffi::apple_log_os_activity_release(self.ptr.as_ptr()) };
