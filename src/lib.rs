@@ -10,7 +10,6 @@ pub mod ffi;
 pub mod log;
 pub mod logger;
 pub mod os_activity;
-pub mod os_atomic;
 pub mod os_log;
 pub mod os_log_entry_activity;
 pub mod os_log_entry_boundary;
@@ -28,7 +27,6 @@ pub use log::{
 };
 pub use logger::{Logger, Privacy};
 pub use os_activity::{OSActivity, OSActivityFlags, OSActivityScope};
-pub use os_atomic::{OSAtomicFifoQueue, OSAtomicI32, OSAtomicI64, OSAtomicQueue};
 pub use os_log::{
     Level, OSLog, CATEGORY_DYNAMIC_STACK_TRACING, CATEGORY_DYNAMIC_TRACING,
     CATEGORY_POINTS_OF_INTEREST,
@@ -54,7 +52,6 @@ pub mod prelude {
     };
     pub use crate::logger::{Logger, Privacy};
     pub use crate::os_activity::{OSActivity, OSActivityFlags, OSActivityScope};
-    pub use crate::os_atomic::{OSAtomicFifoQueue, OSAtomicI32, OSAtomicI64, OSAtomicQueue};
     pub use crate::os_log::{
         Level, OSLog, CATEGORY_DYNAMIC_STACK_TRACING, CATEGORY_DYNAMIC_TRACING,
         CATEGORY_POINTS_OF_INTEREST,

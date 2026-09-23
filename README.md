@@ -14,7 +14,6 @@ Safe Rust bindings for Apple's unified logging stack on macOS.
 - `OSSignpostID`
 - `OSSignposter`
 - `OSActivity`
-- `OSAtomic`
 
 > **Platform:** macOS 12+ (the bridge uses Swift `Logger` and `OSSignposter`).
 
@@ -64,7 +63,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 - `apple_log::os_signpost_id::OSSignpostId`
 - `apple_log::os_signposter::OSSignposter`
 - `apple_log::os_activity::OSActivity`
-- `apple_log::os_atomic::{OSAtomicI32, OSAtomicI64, OSAtomicQueue, OSAtomicFifoQueue}`
 
 ## Raw C FFI
 
@@ -105,7 +103,7 @@ Enable `raw-ffi` when you want direct access to the wrapped C symbols under `app
 
 ## Examples
 
-The crate ships one numbered example per logical area in `examples/01_logger.rs` through `examples/11_os_atomic.rs`.
+The crate ships one numbered example per logical area in `examples/01_logger.rs` through `examples/10_os_activity.rs`.
 
 ## Coverage
 
