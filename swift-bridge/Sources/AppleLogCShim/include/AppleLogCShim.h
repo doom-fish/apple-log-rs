@@ -13,6 +13,13 @@ typedef void *apple_activity_handle_t;
 typedef void *apple_activity_scope_handle_t;
 typedef void (*apple_log_function_t)(void *context);
 
+enum {
+    APPLE_SIGNPOST_KIND_EVENT = 0,
+    APPLE_SIGNPOST_KIND_INTERVAL_BEGIN = 1,
+    APPLE_SIGNPOST_KIND_ANIMATION_INTERVAL_BEGIN = 2,
+    APPLE_SIGNPOST_KIND_INTERVAL_END = 3,
+};
+
 apple_log_handle_t apple_log_create(const char *subsystem, const char *category);
 apple_log_handle_t apple_log_default(void);
 apple_log_handle_t apple_log_disabled(void);
@@ -26,6 +33,7 @@ bool apple_log_type_enabled(apple_log_handle_t log, int32_t level);
 uint64_t apple_signpost_id_generate(apple_log_handle_t log);
 uint64_t apple_signpost_id_make_with_pointer(apple_log_handle_t log, const void *ptr);
 bool apple_signpost_enabled(apple_log_handle_t log);
+void apple_signpost_emit(apple_log_handle_t log, uint64_t spid, int32_t kind, const char *name, const char *message, bool is_public);
 void apple_signpost_event_emit(apple_log_handle_t log, uint64_t spid, const char *name, const char *message);
 void apple_signpost_interval_begin(apple_log_handle_t log, uint64_t spid, const char *name);
 void apple_signpost_animation_interval_begin(apple_log_handle_t log, uint64_t spid, const char *name);

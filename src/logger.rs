@@ -1,11 +1,13 @@
 #![allow(clippy::missing_panics_doc, clippy::should_implement_trait)]
 
 use core::ffi::c_void;
+use std::ffi::CStr;
 use std::ptr::NonNull;
 
 use crate::bridge_support::{bridge_ptr_result, c_string_arg, sanitized_c_string};
 use crate::error::LogError;
 use crate::ffi;
+use crate::ffi::signpost_kind;
 use crate::os_log::{Level, OSLog};
 use crate::os_signpost_id::OSSignpostId;
 
@@ -197,58 +199,65 @@ impl Logger {
         }
     }
 
-    pub fn signpost_event(&self, id: OSSignpostId, name: &str, message: &str) {
-        let name = sanitized_c_string(name);
-        let message = sanitized_c_string(message);
+    fn signpost_emit(
+        &self,
+        kind: i32,
+        id: OSSignpostId,
+        name: &'static CStr,
+        message: &str,
+        privacy: Privacy,
+    ) {
+        let message = (!message.is_empty()).then(|| sanitized_c_string(message));
         unsafe {
-            // SAFETY: self.ptr is a valid non-null Logger pointer. Both name and message
-            // are validated as proper C strings by sanitized_c_string. The function is thread-safe.
-            ffi::apple_log_logger_signpost_event(
+            ffi::apple_log_logger_signpost_emit(
                 self.ptr.as_ptr(),
                 id.as_u64(),
+                kind,
                 name.as_ptr(),
-                message.as_ptr(),
+                message
+                    .as_ref()
+                    .map_or(std::ptr::null(), |message| message.as_ptr()),
+                privacy == Privacy::Public,
             );
         }
     }
 
-    pub fn signpost_interval_begin(&self, id: OSSignpostId, name: &str) {
-        let name = sanitized_c_string(name);
-        unsafe {
-            // SAFETY: self.ptr is a valid non-null Logger pointer. name is validated
-            // as a proper C string by sanitized_c_string. The function is thread-safe.
-            ffi::apple_log_logger_signpost_interval_begin(
-                self.ptr.as_ptr(),
-                id.as_u64(),
-                name.as_ptr(),
-            );
-        }
+    pub fn signpost_event(&self, id: OSSignpostId, name: &'static CStr, message: &str) {
+        self.signpost_emit(signpost_kind::EVENT, id, name, message, Privacy::Private);
     }
 
-    pub fn signpost_animation_interval_begin(&self, id: OSSignpostId, name: &str) {
-        let name = sanitized_c_string(name);
-        unsafe {
-            // SAFETY: self.ptr is a valid non-null Logger pointer. name is validated
-            // as a proper C string by sanitized_c_string. The function is thread-safe.
-            ffi::apple_log_logger_signpost_animation_interval_begin(
-                self.ptr.as_ptr(),
-                id.as_u64(),
-                name.as_ptr(),
-            );
-        }
+    pub fn signpost_event_with_privacy(
+        &self,
+        id: OSSignpostId,
+        name: &'static CStr,
+        message: &str,
+        privacy: Privacy,
+    ) {
+        self.signpost_emit(signpost_kind::EVENT, id, name, message, privacy);
     }
 
-    pub fn signpost_interval_end(&self, id: OSSignpostId, name: &str) {
-        let name = sanitized_c_string(name);
-        unsafe {
-            // SAFETY: self.ptr is a valid non-null Logger pointer. name is validated
-            // as a proper C string by sanitized_c_string. The function is thread-safe.
-            ffi::apple_log_logger_signpost_interval_end(
-                self.ptr.as_ptr(),
-                id.as_u64(),
-                name.as_ptr(),
-            );
-        }
+    pub fn signpost_interval_begin(&self, id: OSSignpostId, name: &'static CStr) {
+        self.signpost_emit(
+            signpost_kind::INTERVAL_BEGIN,
+            id,
+            name,
+            "",
+            Privacy::Private,
+        );
+    }
+
+    pub fn signpost_animation_interval_begin(&self, id: OSSignpostId, name: &'static CStr) {
+        self.signpost_emit(
+            signpost_kind::ANIMATION_INTERVAL_BEGIN,
+            id,
+            name,
+            "",
+            Privacy::Private,
+        );
+    }
+
+    pub fn signpost_interval_end(&self, id: OSSignpostId, name: &'static CStr) {
+        self.signpost_emit(signpost_kind::INTERVAL_END, id, name, "", Privacy::Private);
     }
 
     pub(crate) const fn as_ptr(&self) -> *mut c_void {

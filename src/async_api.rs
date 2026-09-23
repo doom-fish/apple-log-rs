@@ -18,7 +18,7 @@
 //!
 //! # async fn run() -> Result<(), Box<dyn std::error::Error>> {
 //! let bytes = OSActivity::new(
-//!     "download asset",
+//!     c"download asset",
 //!     Some(&OSActivity::current()),
 //!     OSActivityFlags::DEFAULT,
 //! )?

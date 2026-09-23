@@ -32,11 +32,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let signposter = OSSignposter::new("fish.doom.myapp", CATEGORY_POINTS_OF_INTEREST)?;
     let signpost_id = signposter.make_signpost_id();
-    let interval = signposter.begin_interval("startup", signpost_id, "begin startup");
-    signposter.end_interval("startup", interval, "end startup");
+    let interval = signposter.begin_interval(c"startup", signpost_id, "begin startup");
+    signposter.end_interval(interval, "end startup");
 
     let activity = OSActivity::new(
-        "index cache",
+        c"index cache",
         Some(&OSActivity::current()),
         OSActivityFlags::DEFAULT,
     )?;
@@ -84,7 +84,7 @@ use apple_log::{OSActivity, OSActivityFlags};
 
 # async fn run() -> Result<(), Box<dyn std::error::Error>> {
 let bytes = OSActivity::new(
-    "download asset",
+    c"download asset",
     Some(&OSActivity::current()),
     OSActivityFlags::DEFAULT,
 )?

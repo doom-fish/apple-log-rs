@@ -102,57 +102,17 @@ public func appleLogOSSignposterMakeSignpostIDFromPointer(
     return apple_signpost_id_make_with_pointer(bridgeLogHandle(box.logHandle), pointer)
 }
 
-@_cdecl("apple_log_os_signposter_emit_event")
-public func appleLogOSSignposterEmitEvent(
+@_cdecl("apple_log_os_signposter_emit")
+public func appleLogOSSignposterEmit(
     _ signposter: UnsafeMutableRawPointer?,
     _ signpostID: UInt64,
+    _ kind: Int32,
     _ name: UnsafePointer<CChar>?,
-    _ message: UnsafePointer<CChar>?
+    _ message: UnsafePointer<CChar>?,
+    _ isPublic: Bool
 ) {
     guard let box: BridgeOSSignposterBox = takeObject(signposter) else {
         return
     }
-    apple_signpost_event_emit(bridgeLogHandle(box.logHandle), signpostID, name, message)
-}
-
-@_cdecl("apple_log_os_signposter_begin_interval")
-public func appleLogOSSignposterBeginInterval(
-    _ signposter: UnsafeMutableRawPointer?,
-    _ signpostID: UInt64,
-    _ name: UnsafePointer<CChar>?,
-    _ message: UnsafePointer<CChar>?
-) {
-    guard let box: BridgeOSSignposterBox = takeObject(signposter) else {
-        return
-    }
-    apple_signpost_event_emit(bridgeLogHandle(box.logHandle), signpostID, name, message)
-    apple_signpost_interval_begin(bridgeLogHandle(box.logHandle), signpostID, name)
-}
-
-@_cdecl("apple_log_os_signposter_begin_animation_interval")
-public func appleLogOSSignposterBeginAnimationInterval(
-    _ signposter: UnsafeMutableRawPointer?,
-    _ signpostID: UInt64,
-    _ name: UnsafePointer<CChar>?,
-    _ message: UnsafePointer<CChar>?
-) {
-    guard let box: BridgeOSSignposterBox = takeObject(signposter) else {
-        return
-    }
-    apple_signpost_event_emit(bridgeLogHandle(box.logHandle), signpostID, name, message)
-    apple_signpost_animation_interval_begin(bridgeLogHandle(box.logHandle), signpostID, name)
-}
-
-@_cdecl("apple_log_os_signposter_end_interval")
-public func appleLogOSSignposterEndInterval(
-    _ signposter: UnsafeMutableRawPointer?,
-    _ signpostID: UInt64,
-    _ name: UnsafePointer<CChar>?,
-    _ message: UnsafePointer<CChar>?
-) {
-    guard let box: BridgeOSSignposterBox = takeObject(signposter) else {
-        return
-    }
-    apple_signpost_interval_end(bridgeLogHandle(box.logHandle), signpostID, name)
-    apple_signpost_event_emit(bridgeLogHandle(box.logHandle), signpostID, name, message)
+    apple_signpost_emit(bridgeLogHandle(box.logHandle), signpostID, kind, name, message, isPublic)
 }

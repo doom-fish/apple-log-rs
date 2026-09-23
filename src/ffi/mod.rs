@@ -27,6 +27,13 @@ pub mod signpost_id {
     pub const EXCLUSIVE: u64 = 0xEEEE_B0B5_B2B2_EEEE;
 }
 
+pub mod signpost_kind {
+    pub const EVENT: i32 = 0;
+    pub const INTERVAL_BEGIN: i32 = 1;
+    pub const ANIMATION_INTERVAL_BEGIN: i32 = 2;
+    pub const INTERVAL_END: i32 = 3;
+}
+
 extern "C" {
     #[link_name = "apple_log_emit_default_privacy"]
     pub(crate) fn default_log_emit(level: i32, message: *const c_char, is_public: bool);
@@ -74,26 +81,13 @@ extern "C" {
         pointer: *const c_void,
     ) -> u64;
     pub(crate) fn apple_log_logger_signposts_enabled(logger: *mut c_void) -> bool;
-    pub(crate) fn apple_log_logger_signpost_event(
+    pub(crate) fn apple_log_logger_signpost_emit(
         logger: *mut c_void,
         signpost_id: u64,
+        kind: i32,
         name: *const c_char,
         message: *const c_char,
-    );
-    pub(crate) fn apple_log_logger_signpost_interval_begin(
-        logger: *mut c_void,
-        signpost_id: u64,
-        name: *const c_char,
-    );
-    pub(crate) fn apple_log_logger_signpost_animation_interval_begin(
-        logger: *mut c_void,
-        signpost_id: u64,
-        name: *const c_char,
-    );
-    pub(crate) fn apple_log_logger_signpost_interval_end(
-        logger: *mut c_void,
-        signpost_id: u64,
-        name: *const c_char,
+        is_public: bool,
     );
 
     pub(crate) fn apple_log_os_signpost_id_generate(log: *mut c_void) -> u64;
@@ -124,29 +118,13 @@ extern "C" {
         signposter: *mut c_void,
         pointer: *const c_void,
     ) -> u64;
-    pub(crate) fn apple_log_os_signposter_emit_event(
+    pub(crate) fn apple_log_os_signposter_emit(
         signposter: *mut c_void,
         signpost_id: u64,
+        kind: i32,
         name: *const c_char,
         message: *const c_char,
-    );
-    pub(crate) fn apple_log_os_signposter_begin_interval(
-        signposter: *mut c_void,
-        signpost_id: u64,
-        name: *const c_char,
-        message: *const c_char,
-    );
-    pub(crate) fn apple_log_os_signposter_begin_animation_interval(
-        signposter: *mut c_void,
-        signpost_id: u64,
-        name: *const c_char,
-        message: *const c_char,
-    );
-    pub(crate) fn apple_log_os_signposter_end_interval(
-        signposter: *mut c_void,
-        signpost_id: u64,
-        name: *const c_char,
-        message: *const c_char,
+        is_public: bool,
     );
 
     pub(crate) fn apple_log_os_activity_create(

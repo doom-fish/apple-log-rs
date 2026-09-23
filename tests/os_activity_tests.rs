@@ -19,7 +19,7 @@ fn os_activity_smoke() {
     let null_scope = null.enter().expect("null scope");
     drop(null_scope);
 
-    let activity = OSActivity::new("activity-test", Some(&current), OSActivityFlags::DEFAULT)
+    let activity = OSActivity::new(c"activity-test", Some(&current), OSActivityFlags::DEFAULT)
         .expect("activity");
     let ids = activity.identifiers();
     assert!(ids.current > 0 || ids.parent.is_none());
@@ -29,26 +29,24 @@ fn os_activity_smoke() {
     drop(scope);
 
     let initiated = Cell::new(false);
-    OSActivity::initiate("activity-initiate", OSActivityFlags::DEFAULT, || {
+    OSActivity::initiate(c"activity-initiate", OSActivityFlags::DEFAULT, || {
         initiated.set(true);
         Logger::default().info("inside initiate");
-    })
-    .expect("initiate");
+    });
     assert!(initiated.get());
 
     let mut initiate_count = 0_u8;
     OSActivity::initiate_f(
-        "activity-initiate-f",
+        c"activity-initiate-f",
         OSActivityFlags::DEFAULT,
         &mut initiate_count,
         |count| {
             *count += 1;
             Logger::default().info("inside initiate_f");
         },
-    )
-    .expect("initiate_f");
+    );
     assert_eq!(initiate_count, 1);
 
-    OSActivity::label_user_action("activity smoke");
-    OSActivity::set_breadcrumb("activity breadcrumb");
+    OSActivity::label_user_action(c"activity smoke");
+    OSActivity::set_breadcrumb(c"activity breadcrumb");
 }

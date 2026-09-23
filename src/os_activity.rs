@@ -2,10 +2,11 @@
 
 use core::ffi::c_void;
 use core::ops::{BitOr, BitOrAssign};
+use std::ffi::CStr;
 use std::panic::{catch_unwind, resume_unwind, AssertUnwindSafe};
 use std::ptr::NonNull;
 
-use crate::bridge_support::{bridge_ptr_result, c_string_arg, sanitized_c_string};
+use crate::bridge_support::bridge_ptr_result;
 use crate::error::LogError;
 use crate::ffi;
 #[cfg(feature = "async")]
@@ -111,13 +112,12 @@ impl OSActivity {
     ///
     /// # Errors
     ///
-    /// Returns an error if the description contains a NUL byte or the bridge fails.
+    /// Returns an error if the bridge fails.
     pub fn new(
-        description: &str,
+        description: &'static CStr,
         parent: Option<&OSActivity>,
         flags: OSActivityFlags,
     ) -> Result<Self, LogError> {
-        let description = c_string_arg("description", description)?;
         let ptr = bridge_ptr_result("OSActivity::new", |error_out| unsafe {
             ffi::apple_log_os_activity_create(
                 description.as_ptr(),
@@ -133,9 +133,8 @@ impl OSActivity {
     ///
     /// # Errors
     ///
-    /// Returns an error if the description contains a NUL byte or the bridge fails.
-    pub fn start(description: &str, flags: OSActivityFlags) -> Result<Self, LogError> {
-        let description = c_string_arg("description", description)?;
+    /// Returns an error if the bridge fails.
+    pub fn start(description: &'static CStr, flags: OSActivityFlags) -> Result<Self, LogError> {
         let ptr = bridge_ptr_result("OSActivity::start", |error_out| unsafe {
             ffi::apple_log_os_activity_start(description.as_ptr(), flags.bits(), error_out)
         })?;
@@ -143,19 +142,10 @@ impl OSActivity {
     }
 
     /// Synchronously initiates an activity around a closure.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the description contains a NUL byte.
-    pub fn initiate<F>(
-        description: &str,
-        flags: OSActivityFlags,
-        closure: F,
-    ) -> Result<(), LogError>
+    pub fn initiate<F>(description: &'static CStr, flags: OSActivityFlags, closure: F)
     where
         F: FnOnce(),
     {
-        let description = c_string_arg("description", description)?;
         let mut context = ApplyContext {
             closure: Some(closure),
             panic: None,
@@ -171,24 +161,17 @@ impl OSActivity {
         if let Some(panic) = context.panic {
             resume_unwind(panic);
         }
-        Ok(())
     }
 
     /// Synchronously initiates an activity and passes a mutable context value to the callback.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the description contains a NUL byte.
     pub fn initiate_f<C, F>(
-        description: &str,
+        description: &'static CStr,
         flags: OSActivityFlags,
         context: &mut C,
         function: F,
-    ) -> Result<(), LogError>
-    where
+    ) where
         F: FnOnce(&mut C),
     {
-        let description = c_string_arg("description", description)?;
         let mut bridge_context = ApplyWithContext {
             context: std::ptr::from_mut(context),
             function: Some(function),
@@ -205,7 +188,6 @@ impl OSActivity {
         if let Some(panic) = bridge_context.panic {
             resume_unwind(panic);
         }
-        Ok(())
     }
 
     #[must_use]
@@ -294,13 +276,11 @@ impl OSActivity {
         unsafe { ffi::apple_log_os_activity_end(self.ptr.as_ptr()) };
     }
 
-    pub fn label_user_action(label: &str) {
-        let label = sanitized_c_string(label);
+    pub fn label_user_action(label: &'static CStr) {
         unsafe { ffi::apple_log_os_activity_label_useraction(label.as_ptr()) };
     }
 
-    pub fn set_breadcrumb(name: &str) {
-        let name = sanitized_c_string(name);
+    pub fn set_breadcrumb(name: &'static CStr) {
         unsafe { ffi::apple_log_os_activity_set_breadcrumb(name.as_ptr()) };
     }
 

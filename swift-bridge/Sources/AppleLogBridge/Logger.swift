@@ -183,56 +183,17 @@ public func appleLogLoggerSignpostsEnabled(_ logger: UnsafeMutableRawPointer?) -
     return apple_signpost_enabled(bridgeLogHandle(box.logHandle))
 }
 
-@_cdecl("apple_log_logger_signpost_event")
-public func appleLogLoggerSignpostEvent(
+@_cdecl("apple_log_logger_signpost_emit")
+public func appleLogLoggerSignpostEmit(
     _ logger: UnsafeMutableRawPointer?,
     _ signpostID: UInt64,
+    _ kind: Int32,
     _ name: UnsafePointer<CChar>?,
-    _ message: UnsafePointer<CChar>?
+    _ message: UnsafePointer<CChar>?,
+    _ isPublic: Bool
 ) {
     guard let box: BridgeLoggerBox = takeObject(logger) else {
         return
     }
-    apple_signpost_event_emit(
-        bridgeLogHandle(box.logHandle),
-        signpostID,
-        name,
-        message
-    )
-}
-
-@_cdecl("apple_log_logger_signpost_interval_begin")
-public func appleLogLoggerSignpostIntervalBegin(
-    _ logger: UnsafeMutableRawPointer?,
-    _ signpostID: UInt64,
-    _ name: UnsafePointer<CChar>?
-) {
-    guard let box: BridgeLoggerBox = takeObject(logger) else {
-        return
-    }
-    apple_signpost_interval_begin(bridgeLogHandle(box.logHandle), signpostID, name)
-}
-
-@_cdecl("apple_log_logger_signpost_animation_interval_begin")
-public func appleLogLoggerSignpostAnimationIntervalBegin(
-    _ logger: UnsafeMutableRawPointer?,
-    _ signpostID: UInt64,
-    _ name: UnsafePointer<CChar>?
-) {
-    guard let box: BridgeLoggerBox = takeObject(logger) else {
-        return
-    }
-    apple_signpost_animation_interval_begin(bridgeLogHandle(box.logHandle), signpostID, name)
-}
-
-@_cdecl("apple_log_logger_signpost_interval_end")
-public func appleLogLoggerSignpostIntervalEnd(
-    _ logger: UnsafeMutableRawPointer?,
-    _ signpostID: UInt64,
-    _ name: UnsafePointer<CChar>?
-) {
-    guard let box: BridgeLoggerBox = takeObject(logger) else {
-        return
-    }
-    apple_signpost_interval_end(bridgeLogHandle(box.logHandle), signpostID, name)
+    apple_signpost_emit(bridgeLogHandle(box.logHandle), signpostID, kind, name, message, isPublic)
 }

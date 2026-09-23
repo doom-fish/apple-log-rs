@@ -5,10 +5,10 @@ use apple_log::prelude::*;
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let signposter = OSSignposter::new("fish.doom.apple-log", CATEGORY_POINTS_OF_INTEREST)?;
     let id = signposter.make_signpost_id();
-    let interval = signposter.begin_interval("startup", id, "begin");
+    let interval = signposter.begin_interval(c"startup", id, "begin");
     std::thread::sleep(Duration::from_millis(5));
-    signposter.end_interval("startup", interval, "end");
-    signposter.emit_event("milestone", id, "event");
+    signposter.end_interval(interval, "end");
+    signposter.emit_event(c"milestone", id, "event");
     std::thread::sleep(Duration::from_millis(100));
 
     let store = OSLogStore::new(OSLogStoreScope::CurrentProcessIdentifier)?;

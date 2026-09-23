@@ -4,7 +4,7 @@ use apple_log::prelude::*;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let activity = OSActivity::new(
-        "example-activity",
+        c"example-activity",
         Some(&OSActivity::current()),
         OSActivityFlags::DEFAULT,
     )?;

@@ -5,7 +5,7 @@ use apple_log::prelude::*;
 #[test]
 fn os_log_entry_activity_accessors() {
     let activity = OSActivity::new(
-        "activity-entry-test",
+        c"activity-entry-test",
         Some(&OSActivity::current()),
         OSActivityFlags::DEFAULT,
     )

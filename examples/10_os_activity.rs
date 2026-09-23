@@ -9,7 +9,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
 
     let activity = OSActivity::new(
-        "example-activity",
+        c"example-activity",
         Some(&OSActivity::current()),
         OSActivityFlags::DEFAULT,
     )?;
@@ -20,23 +20,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     drop(scope);
     activity.apply(|| Logger::default().info("inside apply"));
 
-    OSActivity::initiate("example-initiate", OSActivityFlags::DEFAULT, || {
+    OSActivity::initiate(c"example-initiate", OSActivityFlags::DEFAULT, || {
         Logger::default().info("inside initiate");
-    })?;
+    });
 
     let mut initiate_message = String::from("inside initiate_f");
     OSActivity::initiate_f(
-        "example-initiate-f",
+        c"example-initiate-f",
         OSActivityFlags::DEFAULT,
         &mut initiate_message,
         |message| Logger::default().info(message.as_str()),
-    )?;
+    );
 
     #[cfg(feature = "async")]
     {
         let async_message = pollster::block_on(
             OSActivity::new(
-                "example-async-activity",
+                c"example-async-activity",
                 Some(&OSActivity::current()),
                 OSActivityFlags::DEFAULT,
             )?
@@ -48,7 +48,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Logger::default().info(async_message);
     }
 
-    OSActivity::label_user_action("example action");
-    OSActivity::set_breadcrumb("example breadcrumb");
+    OSActivity::label_user_action(c"example action");
+    OSActivity::set_breadcrumb(c"example breadcrumb");
     Ok(())
 }

@@ -7,8 +7,8 @@ fn os_log_entry_signpost_accessors() {
     let signposter =
         OSSignposter::new("fish.doom.apple-log", CATEGORY_POINTS_OF_INTEREST).expect("signposter");
     let id = signposter.make_signpost_id();
-    let interval = signposter.begin_interval("signpost-test", id, "begin");
-    signposter.end_interval("signpost-test", interval, "end");
+    let interval = signposter.begin_interval(c"signpost-test", id, "begin");
+    signposter.end_interval(interval, "end");
     std::thread::sleep(Duration::from_millis(100));
 
     let store = OSLogStore::new(OSLogStoreScope::CurrentProcessIdentifier).expect("store");

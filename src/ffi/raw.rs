@@ -23,6 +23,14 @@ extern "C" {
     pub fn apple_signpost_id_generate(log: os_log_t) -> u64;
     pub fn apple_signpost_id_make_with_pointer(log: os_log_t, ptr: *const c_void) -> u64;
     pub fn apple_signpost_enabled(log: os_log_t) -> bool;
+    pub fn apple_signpost_emit(
+        log: os_log_t,
+        spid: u64,
+        kind: i32,
+        name: *const c_char,
+        message: *const c_char,
+        is_public: bool,
+    );
     pub fn apple_signpost_event_emit(
         log: os_log_t,
         spid: u64,

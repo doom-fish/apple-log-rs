@@ -105,25 +105,77 @@ bool apple_signpost_enabled(apple_log_handle_t log) {
     return os_signpost_enabled(apple_resolve_log(log));
 }
 
+#define APPLE_SIGNPOST_EMIT(log, type, spid, name, fmt, ...) __extension__({ \
+        OS_LOG_PRAGMA_PUSH OS_LOG_STRING(LOG, _apple_fmt_str, fmt); \
+        uint8_t _Alignas(16) OS_LOG_UNINITIALIZED _apple_fmt_buf[__builtin_os_log_format_buffer_size(fmt, ##__VA_ARGS__)]; \
+        _os_signpost_emit_with_name_impl(&__dso_handle, (log), (type), (spid), (name), _apple_fmt_str, \
+                (uint8_t *)__builtin_os_log_format(_apple_fmt_buf, fmt, ##__VA_ARGS__), \
+                (uint32_t)sizeof(_apple_fmt_buf)) OS_LOG_PRAGMA_POP; \
+})
+
+void apple_signpost_emit(apple_log_handle_t log, uint64_t spid, int32_t kind, const char *name, const char *message, bool is_public) {
+    os_log_t resolved = apple_resolve_log(log);
+    os_signpost_id_t signpost_id = (os_signpost_id_t)spid;
+    if (signpost_id == OS_SIGNPOST_ID_NULL || signpost_id == OS_SIGNPOST_ID_INVALID || !os_signpost_enabled(resolved)) {
+        return;
+    }
+    os_signpost_type_t type;
+    switch (kind) {
+    case APPLE_SIGNPOST_KIND_EVENT:
+        type = OS_SIGNPOST_EVENT;
+        name = name ? name : "event";
+        break;
+    case APPLE_SIGNPOST_KIND_INTERVAL_BEGIN:
+        type = OS_SIGNPOST_INTERVAL_BEGIN;
+        name = name ? name : "interval";
+        break;
+    case APPLE_SIGNPOST_KIND_ANIMATION_INTERVAL_BEGIN:
+        type = OS_SIGNPOST_INTERVAL_BEGIN;
+        name = name ? name : "animation";
+        break;
+    case APPLE_SIGNPOST_KIND_INTERVAL_END:
+        type = OS_SIGNPOST_INTERVAL_END;
+        name = name ? name : "interval";
+        break;
+    default:
+        return;
+    }
+    bool animation = kind == APPLE_SIGNPOST_KIND_ANIMATION_INTERVAL_BEGIN;
+    if (!message) {
+        if (animation) {
+            APPLE_SIGNPOST_EMIT(resolved, type, signpost_id, name, " " _OS_SIGNPOST_ANIMATION_INTERVAL_TAG);
+        } else {
+            APPLE_SIGNPOST_EMIT(resolved, type, signpost_id, name, "");
+        }
+    } else if (is_public) {
+        if (animation) {
+            APPLE_SIGNPOST_EMIT(resolved, type, signpost_id, name, "%{public}s " _OS_SIGNPOST_ANIMATION_INTERVAL_TAG, message);
+        } else {
+            APPLE_SIGNPOST_EMIT(resolved, type, signpost_id, name, "%{public}s", message);
+        }
+    } else {
+        if (animation) {
+            APPLE_SIGNPOST_EMIT(resolved, type, signpost_id, name, "%{private}s " _OS_SIGNPOST_ANIMATION_INTERVAL_TAG, message);
+        } else {
+            APPLE_SIGNPOST_EMIT(resolved, type, signpost_id, name, "%{private}s", message);
+        }
+    }
+}
+
 void apple_signpost_event_emit(apple_log_handle_t log, uint64_t spid, const char *name, const char *message) {
-    const char *event_name = name ? name : "event";
-    const char *event_message = message ? message : "";
-    os_signpost_event_emit(apple_resolve_log(log), (os_signpost_id_t)spid, "rust", "%{public}s %{public}s", event_name, event_message);
+    apple_signpost_emit(log, spid, APPLE_SIGNPOST_KIND_EVENT, name, message, false);
 }
 
 void apple_signpost_interval_begin(apple_log_handle_t log, uint64_t spid, const char *name) {
-    const char *interval_name = name ? name : "interval";
-    os_signpost_interval_begin(apple_resolve_log(log), (os_signpost_id_t)spid, "rust", "%{public}s", interval_name);
+    apple_signpost_emit(log, spid, APPLE_SIGNPOST_KIND_INTERVAL_BEGIN, name, NULL, false);
 }
 
 void apple_signpost_animation_interval_begin(apple_log_handle_t log, uint64_t spid, const char *name) {
-    const char *interval_name = name ? name : "animation";
-    os_signpost_animation_interval_begin(apple_resolve_log(log), (os_signpost_id_t)spid, "rust", "%{public}s", interval_name);
+    apple_signpost_emit(log, spid, APPLE_SIGNPOST_KIND_ANIMATION_INTERVAL_BEGIN, name, NULL, false);
 }
 
 void apple_signpost_interval_end(apple_log_handle_t log, uint64_t spid, const char *name) {
-    const char *interval_name = name ? name : "interval";
-    os_signpost_interval_end(apple_resolve_log(log), (os_signpost_id_t)spid, "rust", "%{public}s", interval_name);
+    apple_signpost_emit(log, spid, APPLE_SIGNPOST_KIND_INTERVAL_END, name, NULL, false);
 }
 
 uint64_t apple_activity_get_identifiers(uint64_t *parent_id) {
