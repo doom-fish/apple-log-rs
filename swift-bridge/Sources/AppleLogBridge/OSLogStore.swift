@@ -17,7 +17,7 @@ final class BridgeOSLogMessageComponent {
     init(_ component: OSLogMessageComponent) {
         formatSubstring = component.formatSubstring
         placeholder = component.placeholder
-        argumentCategory = Int32(component.argumentCategory.rawValue)
+        argumentCategory = Int32(clamping: component.argumentCategory.rawValue)
         dataValue = component.argumentDataValue
         doubleValue = component.argumentDoubleValue
         int64Value = component.argumentInt64Value
@@ -50,7 +50,7 @@ final class BridgeOSLogEntrySnapshot {
     init(entry: OSLogEntry) {
         composedMessage = entry.composedMessage
         dateSecondsSince1970 = entry.date.timeIntervalSince1970
-        storeCategory = Int32(entry.storeCategory.rawValue)
+        storeCategory = Int32(clamping: entry.storeCategory.rawValue)
 
         if let processEntry = entry as? OSLogEntryFromProcess {
             activityIdentifier = UInt64(processEntry.activityIdentifier)
@@ -80,7 +80,7 @@ final class BridgeOSLogEntrySnapshot {
 
         if let logEntry = entry as? OSLogEntryLog {
             kind = 1
-            level = Int32(logEntry.level.rawValue)
+            level = Int32(clamping: logEntry.level.rawValue)
             signpostIdentifier = nil
             signpostName = nil
             signpostType = nil
@@ -90,7 +90,7 @@ final class BridgeOSLogEntrySnapshot {
             level = nil
             signpostIdentifier = signpostEntry.signpostIdentifier
             signpostName = signpostEntry.signpostName
-            signpostType = Int32(signpostEntry.signpostType.rawValue)
+            signpostType = Int32(clamping: signpostEntry.signpostType.rawValue)
             parentActivityIdentifier = nil
         } else if entry is OSLogEntryBoundary {
             kind = 3
@@ -141,7 +141,9 @@ final class BridgeOSLogEntryListBox {
     }
 }
 
-private let bridgeLogTypeNames = ["debug", "info", "default", "error", "fault"]
+private let bridgeLogTypes: [(bit: UInt32, name: String)] = [
+    (1, "debug"), (2, "info"), (4, "default"), (8, "error"), (16, "fault"),
+]
 
 private func bridgeKeyPredicate(_ key: String, _ comparison: String, _ value: Any) -> NSPredicate {
     NSPredicate(format: "%K \(comparison) %@", argumentArray: [key, value])
@@ -163,9 +165,9 @@ private func bridgeFilterPredicate(
     if let category {
         predicates.append(bridgeKeyPredicate("category", "==", String(cString: category)))
     }
-    let logTypes = bridgeLogTypeNames.enumerated()
-        .filter { logTypeMask & (UInt32(1) << UInt32($0.offset)) != 0 }
-        .map { bridgeKeyPredicate("logType", "==", $0.element) }
+    let logTypes = bridgeLogTypes
+        .filter { logTypeMask & $0.bit != 0 }
+        .map { bridgeKeyPredicate("logType", "==", $0.name) }
     if !logTypes.isEmpty {
         predicates.append(NSCompoundPredicate(orPredicateWithSubpredicates: logTypes))
     }
