@@ -1,3 +1,4 @@
+import AppleLogObjCBridge
 import Foundation
 import OSLog
 import os
@@ -140,11 +141,68 @@ final class BridgeOSLogEntryListBox {
     }
 }
 
-private func bridgePredicate(_ predicate: UnsafePointer<CChar>?) -> NSPredicate? {
-    guard let predicate else {
-        return nil
+private let bridgeLogTypeNames = ["debug", "info", "default", "error", "fault"]
+
+private func bridgeKeyPredicate(_ key: String, _ comparison: String, _ value: Any) -> NSPredicate {
+    NSPredicate(format: "%K \(comparison) %@", argumentArray: [key, value])
+}
+
+private func bridgeFilterPredicate(
+    _ subsystem: UnsafePointer<CChar>?,
+    _ category: UnsafePointer<CChar>?,
+    _ logTypeMask: UInt32,
+    _ hasStart: Bool,
+    _ startSeconds: Double,
+    _ hasEnd: Bool,
+    _ endSeconds: Double
+) -> NSPredicate? {
+    var predicates: [NSPredicate] = []
+    if let subsystem {
+        predicates.append(bridgeKeyPredicate("subsystem", "==", String(cString: subsystem)))
     }
-    return NSPredicate(format: String(cString: predicate))
+    if let category {
+        predicates.append(bridgeKeyPredicate("category", "==", String(cString: category)))
+    }
+    let logTypes = bridgeLogTypeNames.enumerated()
+        .filter { logTypeMask & (UInt32(1) << UInt32($0.offset)) != 0 }
+        .map { bridgeKeyPredicate("logType", "==", $0.element) }
+    if !logTypes.isEmpty {
+        predicates.append(NSCompoundPredicate(orPredicateWithSubpredicates: logTypes))
+    }
+    if hasStart {
+        predicates.append(bridgeKeyPredicate("date", ">=", Date(timeIntervalSince1970: startSeconds)))
+    }
+    if hasEnd {
+        predicates.append(bridgeKeyPredicate("date", "<=", Date(timeIntervalSince1970: endSeconds)))
+    }
+    return predicates.isEmpty ? nil : NSCompoundPredicate(andPredicateWithSubpredicates: predicates)
+}
+
+private func bridgeCollectEntries(
+    _ storeBox: BridgeOSLogStoreBox,
+    _ options: UInt,
+    _ position: UnsafeMutableRawPointer?,
+    _ predicate: NSPredicate?,
+    _ maxEntries: UInt,
+    _ errorOut: UnsafeMutablePointer<UnsafeMutablePointer<CChar>?>?
+) -> UnsafeMutableRawPointer? {
+    let positionBox: BridgeOSLogPositionBox? = takeObject(position)
+    return autoreleasepool {
+        var error: NSError?
+        guard let entries = ALXTryCollectEntries(
+            storeBox.store,
+            OSLogEnumerator.Options(rawValue: options),
+            positionBox?.position,
+            predicate,
+            maxEntries,
+            &error
+        ) else {
+            setError(errorOut, error?.localizedDescription ?? "OSLogStore enumeration failed")
+            return nil
+        }
+        let snapshots = entries.map(BridgeOSLogEntrySnapshot.init)
+        return retainObject(BridgeOSLogEntryListBox(entries: snapshots))
+    }
 }
 
 @_cdecl("apple_log_os_log_store_local")
@@ -251,26 +309,55 @@ public func appleLogOSLogStoreGetEntries(
     _ store: UnsafeMutableRawPointer?,
     _ options: UInt,
     _ position: UnsafeMutableRawPointer?,
-    _ predicate: UnsafePointer<CChar>?,
+    _ subsystem: UnsafePointer<CChar>?,
+    _ category: UnsafePointer<CChar>?,
+    _ logTypeMask: UInt32,
+    _ hasStart: Bool,
+    _ startSeconds: Double,
+    _ hasEnd: Bool,
+    _ endSeconds: Double,
+    _ maxEntries: UInt,
     _ errorOut: UnsafeMutablePointer<UnsafeMutablePointer<CChar>?>?
 ) -> UnsafeMutableRawPointer? {
     guard let storeBox: BridgeOSLogStoreBox = takeObject(store) else {
         setError(errorOut, "invalid OSLogStore handle")
         return nil
     }
-    let positionBox: BridgeOSLogPositionBox? = takeObject(position)
-    do {
-        let entries = try storeBox.store.getEntries(
-            with: OSLogEnumerator.Options(rawValue: options),
-            at: positionBox?.position,
-            matching: bridgePredicate(predicate)
-        )
-        let snapshots = Array(entries).map(BridgeOSLogEntrySnapshot.init)
-        return retainObject(BridgeOSLogEntryListBox(entries: snapshots))
-    } catch {
-        setError(errorOut, error.localizedDescription)
+    let predicate = bridgeFilterPredicate(
+        subsystem,
+        category,
+        logTypeMask,
+        hasStart,
+        startSeconds,
+        hasEnd,
+        endSeconds
+    )
+    return bridgeCollectEntries(storeBox, options, position, predicate, maxEntries, errorOut)
+}
+
+@_cdecl("apple_log_os_log_store_get_entries_with_predicate")
+public func appleLogOSLogStoreGetEntriesWithPredicate(
+    _ store: UnsafeMutableRawPointer?,
+    _ options: UInt,
+    _ position: UnsafeMutableRawPointer?,
+    _ predicateFormat: UnsafePointer<CChar>?,
+    _ maxEntries: UInt,
+    _ errorOut: UnsafeMutablePointer<UnsafeMutablePointer<CChar>?>?
+) -> UnsafeMutableRawPointer? {
+    guard let storeBox: BridgeOSLogStoreBox = takeObject(store) else {
+        setError(errorOut, "invalid OSLogStore handle")
         return nil
     }
+    guard let predicateFormat else {
+        setError(errorOut, "predicate is required")
+        return nil
+    }
+    var error: NSError?
+    guard let predicate = ALXTryMakePredicate(String(cString: predicateFormat), &error) else {
+        setError(errorOut, error?.localizedDescription ?? "invalid predicate")
+        return nil
+    }
+    return bridgeCollectEntries(storeBox, options, position, predicate, maxEntries, errorOut)
 }
 
 @_cdecl("apple_log_os_log_entry_list_release")

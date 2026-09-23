@@ -18,7 +18,8 @@ fn os_log_entry_activity_accessors() {
         .entries(
             OSLogEnumeratorOptions::REVERSE,
             Some(&store.position_time_interval_since_end(Duration::from_secs(5))),
-            None,
+            &OSLogEntryFilter::default(),
+            1_000,
         )
         .expect("entries");
     if let Some(OSLogStoreEntry::Activity(entry)) = entries

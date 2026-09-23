@@ -283,7 +283,22 @@ extern "C" {
         store: *mut c_void,
         options: usize,
         position: *mut c_void,
-        predicate: *const c_char,
+        subsystem: *const c_char,
+        category: *const c_char,
+        log_type_mask: u32,
+        has_start: bool,
+        start_seconds: f64,
+        has_end: bool,
+        end_seconds: f64,
+        max_entries: usize,
+        error_out: *mut *mut c_char,
+    ) -> *mut c_void;
+    pub(crate) fn apple_log_os_log_store_get_entries_with_predicate(
+        store: *mut c_void,
+        options: usize,
+        position: *mut c_void,
+        predicate_format: *const c_char,
+        max_entries: usize,
         error_out: *mut *mut c_char,
     ) -> *mut c_void;
     pub(crate) fn apple_log_os_log_entry_list_release(list: *mut c_void);

@@ -15,8 +15,12 @@ let package = Package(
     targets: [
         .target(
             name: "AppleLogBridge",
-            dependencies: ["AppleLogCShim"],
+            dependencies: ["AppleLogCShim", "AppleLogObjCBridge"],
             path: "Sources/AppleLogBridge"),
+        .target(
+            name: "AppleLogObjCBridge",
+            path: "Sources/AppleLogObjCBridge",
+            publicHeadersPath: "include"),
         .target(
             name: "AppleLogCShim",
             path: "Sources/AppleLogCShim",

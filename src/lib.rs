@@ -38,9 +38,10 @@ pub use os_log_entry_boundary::OSLogEntryBoundary;
 pub use os_log_entry_log::{OSLogEntryLog, OSLogEntryLogLevel};
 pub use os_log_entry_signpost::{OSLogEntrySignpost, OSLogEntrySignpostType};
 pub use os_log_store::{
-    OSLogEntryCommon, OSLogEntryFromProcess, OSLogEntryWithPayload, OSLogEnumeratorOptions,
-    OSLogMessageArgument, OSLogMessageArgumentCategory, OSLogMessageComponent, OSLogPosition,
-    OSLogStore, OSLogStoreCategory, OSLogStoreEntry, OSLogStoreScope,
+    OSLogEntryCommon, OSLogEntryFilter, OSLogEntryFromProcess, OSLogEntryWithPayload,
+    OSLogEnumeratorOptions, OSLogMessageArgument, OSLogMessageArgumentCategory,
+    OSLogMessageComponent, OSLogPosition, OSLogStore, OSLogStoreCategory, OSLogStoreEntry,
+    OSLogStoreScope,
 };
 pub use os_signpost_id::{OSSignpostId, SignpostId};
 pub use os_signposter::{OSSignpostInterval, OSSignposter};
@@ -63,9 +64,10 @@ pub mod prelude {
     pub use crate::os_log_entry_log::{OSLogEntryLog, OSLogEntryLogLevel};
     pub use crate::os_log_entry_signpost::{OSLogEntrySignpost, OSLogEntrySignpostType};
     pub use crate::os_log_store::{
-        OSLogEntryCommon, OSLogEntryFromProcess, OSLogEntryWithPayload, OSLogEnumeratorOptions,
-        OSLogMessageArgument, OSLogMessageArgumentCategory, OSLogMessageComponent, OSLogPosition,
-        OSLogStore, OSLogStoreCategory, OSLogStoreEntry, OSLogStoreScope,
+        OSLogEntryCommon, OSLogEntryFilter, OSLogEntryFromProcess, OSLogEntryWithPayload,
+        OSLogEnumeratorOptions, OSLogMessageArgument, OSLogMessageArgumentCategory,
+        OSLogMessageComponent, OSLogPosition, OSLogStore, OSLogStoreCategory, OSLogStoreEntry,
+        OSLogStoreScope,
     };
     pub use crate::os_signpost_id::{OSSignpostId, SignpostId};
     pub use crate::os_signposter::{OSSignpostInterval, OSSignposter};

@@ -46,7 +46,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let entries = store.entries(
         OSLogEnumeratorOptions::REVERSE,
         Some(&store.position_time_interval_since_end(Duration::from_secs(5))),
-        None,
+        &OSLogEntryFilter::default(),
+        1_000,
     )?;
     println!("recent entries: {}", entries.len());
 
