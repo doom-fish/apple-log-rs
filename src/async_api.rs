@@ -4,7 +4,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! apple-log = { version = "0.6", features = ["async"] }
+//! apple-log = { version = "0.7", features = ["async"] }
 //! ```
 //!
 //! [`ActivityFuture`] wraps any `Future` and enters an `OSActivity` around each

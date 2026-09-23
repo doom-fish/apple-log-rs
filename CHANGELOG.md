@@ -1,5 +1,44 @@
 # Changelog
 
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.7.0] - Unreleased
+
+### Security
+
+- **Breaking (behavior):** dynamic strings are logged as private by default. `Logger::log`, `trace` through `fault`, the `log` free function, signpost messages and the C shim's `apple_log_emit` / `apple_log_emit_default` now redact their message; pass `Privacy::Public` through `log_with_privacy` or a `*_with_privacy` method to opt in.
+- **Breaking:** `OSLogStore` no longer passes caller text to `NSPredicate(format:)`, which read nonexistent varargs and aborted the process on malformed input. `get_entries` and `entries` take an `OSLogEntryFilter` and a `max_entries` bound instead of `Option<&str>`.
+
+### Fixed
+
+- Signposts use the caller's name as the signpost name instead of `"rust"`, and `OSSignposter::begin_interval` / `end_interval` no longer emit an extra event signpost each.
+- Activity descriptions, user-action labels and breadcrumbs are constant strings, so the unified log can decode them.
+- `get_entries` stops enumerating at `max_entries` instead of materializing every matching entry.
+- Entry dates never panic: invalid values map to `UNIX_EPOCH`, and dates before 1970 are supported.
+- The OSLogStore bridge no longer uses trapping integer conversions on framework values.
+- The `log`, `log_with_privacy` and `log_enabled` free functions no longer allocate a Swift `Logger` on every call.
+
+### Changed
+
+- **Breaking:** signpost names are `&'static CStr` in `OSSignposter::emit_event`, `begin_interval`, `begin_animation_interval`, `with_interval_signpost` and the `Logger::signpost_*` helpers; `OSSignposter::end_interval` takes the name from the `OSSignpostInterval`.
+- **Breaking:** `OSActivity::new`, `start`, `initiate`, `initiate_f`, `label_user_action` and `set_breadcrumb` take `&'static CStr`; `initiate` and `initiate_f` return `()`.
+- `OSActivity` is `Send + Sync`, so `ActivityFuture` is `Send` when its inner future is.
+- `rust-version` is now 1.82.
+- `build.rs` no longer runs `swiftlint`.
+
+### Added
+
+- `OSLogEntryFilter` (subsystem, category, minimum level, date range) and `OSLogStore::get_entries_with_predicate`, which parses raw predicate formats inside an Objective-C `@try/@catch` and returns an error for invalid input.
+- `OSSignpostInterval::name`, the `OSSignposter::*_with_privacy` methods, `Logger::signpost_event_with_privacy`, `ffi::signpost_kind` and the raw `apple_signpost_emit`.
+
+### Removed
+
+- **Breaking:** the OSAtomic wrappers (`OSAtomicI32`, `OSAtomicI64`, `OSAtomicQueue`, `OSAtomicFifoQueue`) and their raw FFI. They wrapped deprecated APIs, were `!Send`/`!Sync` and freed queue nodes unsafely; use `std::sync::atomic`.
+- The unused duplicate C shim `src/c-shim/apple_log_shim.c`.
+
 ## [0.6.0] - 2026-05-20
 
 ### Added

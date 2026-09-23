@@ -2,7 +2,7 @@
 
 Safe Rust bindings for Apple's unified logging stack on macOS.
 
-`apple-log` v0.6 adds a Swift bridge on top of the C `os` APIs and the Swift `os` / `OSLog` modules, covering:
+`apple-log` wraps the C `os` APIs and the Swift `os` / `OSLog` modules through a Swift bridge, covering:
 
 - `Logger`
 - `OSLog`
@@ -16,6 +16,11 @@ Safe Rust bindings for Apple's unified logging stack on macOS.
 - `OSActivity`
 
 > **Platform:** macOS 12+ (the bridge uses Swift `Logger` and `OSSignposter`).
+
+```toml
+[dependencies]
+apple-log = "0.7"
+```
 
 ## Quick start
 
@@ -101,7 +106,7 @@ The crate keeps the low-level C shim behind the `raw-ffi` feature. The feature i
 
 ```toml
 [dependencies]
-apple-log = { version = "0.5", default-features = false }
+apple-log = { version = "0.7", default-features = false }
 ```
 
 Enable `raw-ffi` when you want direct access to the wrapped C symbols under `apple_log::ffi`.
@@ -112,7 +117,7 @@ Enable the `async` feature to wrap any executor-agnostic future in an `OSActivit
 
 ```toml
 [dependencies]
-apple-log = { version = "0.6", features = ["async"] }
+apple-log = { version = "0.7", features = ["async"] }
 ```
 
 ```rust,no_run
