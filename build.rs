@@ -16,19 +16,6 @@ fn main() {
     let out_dir = env::var("OUT_DIR").expect("OUT_DIR must be set by Cargo");
     let swift_build_dir = format!("{out_dir}/swift-build");
 
-    if let Ok(output) = Command::new("swiftlint")
-        .arg("lint")
-        .current_dir(swift_dir)
-        .output()
-    {
-        if !output.status.success() {
-            eprintln!(
-                "SwiftLint warnings:\n{}",
-                String::from_utf8_lossy(&output.stdout)
-            );
-        }
-    }
-
     let target_arch = env::var("CARGO_CFG_TARGET_ARCH").unwrap_or_default();
     let swift_triple = match target_arch.as_str() {
         "x86_64" => "x86_64-apple-macosx",
