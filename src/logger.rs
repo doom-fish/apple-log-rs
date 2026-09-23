@@ -116,7 +116,7 @@ impl Logger {
 
     /// Emits a message at one of the classic `OSLogType` levels.
     pub fn log(&self, level: Level, message: &str) {
-        self.write(severity_for_level(level), Privacy::Public, message);
+        self.write(severity_for_level(level), Privacy::Private, message);
     }
 
     /// Emits a message with an explicit privacy level.
@@ -125,35 +125,35 @@ impl Logger {
     }
 
     pub fn trace(&self, message: &str) {
-        self.write(1, Privacy::Public, message);
+        self.write(1, Privacy::Private, message);
     }
 
     pub fn debug(&self, message: &str) {
-        self.write(2, Privacy::Public, message);
+        self.write(2, Privacy::Private, message);
     }
 
     pub fn info(&self, message: &str) {
-        self.write(3, Privacy::Public, message);
+        self.write(3, Privacy::Private, message);
     }
 
     pub fn notice(&self, message: &str) {
-        self.write(4, Privacy::Public, message);
+        self.write(4, Privacy::Private, message);
     }
 
     pub fn warning(&self, message: &str) {
-        self.write(5, Privacy::Public, message);
+        self.write(5, Privacy::Private, message);
     }
 
     pub fn error(&self, message: &str) {
-        self.write(6, Privacy::Public, message);
+        self.write(6, Privacy::Private, message);
     }
 
     pub fn critical(&self, message: &str) {
-        self.write(7, Privacy::Public, message);
+        self.write(7, Privacy::Private, message);
     }
 
     pub fn fault(&self, message: &str) {
-        self.write(8, Privacy::Public, message);
+        self.write(8, Privacy::Private, message);
     }
 
     /// Returns whether the underlying `OSLog` handle enables this classic level.

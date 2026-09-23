@@ -78,7 +78,7 @@ void apple_log_emit_privacy(apple_log_handle_t log, int32_t level, const char *m
 }
 
 void apple_log_emit(apple_log_handle_t log, int32_t level, const char *message) {
-    apple_log_emit_privacy(log, level, message, true);
+    apple_log_emit_privacy(log, level, message, false);
 }
 
 void apple_log_emit_default_privacy(int32_t level, const char *message, bool is_public) {
@@ -86,7 +86,7 @@ void apple_log_emit_default_privacy(int32_t level, const char *message, bool is_
 }
 
 void apple_log_emit_default(int32_t level, const char *message) {
-    apple_log_emit_privacy(OS_LOG_DEFAULT, level, message, true);
+    apple_log_emit_privacy(OS_LOG_DEFAULT, level, message, false);
 }
 
 bool apple_log_type_enabled(apple_log_handle_t log, int32_t level) {

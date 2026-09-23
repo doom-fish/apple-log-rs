@@ -28,6 +28,11 @@ pub mod signpost_id {
 }
 
 extern "C" {
+    #[link_name = "apple_log_emit_default_privacy"]
+    pub(crate) fn default_log_emit(level: i32, message: *const c_char, is_public: bool);
+    #[link_name = "apple_log_type_enabled"]
+    pub(crate) fn default_log_type_enabled(log: *mut c_void, level: i32) -> bool;
+
     pub(crate) fn apple_log_string_free(string: *mut c_char);
     pub(crate) fn apple_log_bytes_free(bytes: *mut c_void);
 
