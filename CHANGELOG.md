@@ -9,8 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
-- **Breaking (behavior):** dynamic strings are logged as private by default. `Logger::log`, `trace` through `fault`, the `log` free function, signpost messages and the C shim's `apple_log_emit` / `apple_log_emit_default` now redact their message; pass `Privacy::Public` through `log_with_privacy` or a `*_with_privacy` method to opt in.
-- **Breaking:** `OSLogStore` no longer passes caller text to `NSPredicate(format:)`, which read nonexistent varargs and aborted the process on malformed input. `get_entries` and `entries` take an `OSLogEntryFilter` and a `max_entries` bound instead of `Option<&str>`.
+- Dynamic strings passed to `Logger` convenience calls, the `log` free function, signposts and the C shim's `apple_log_emit` / `apple_log_emit_default` were stored in clear text in the unified log; they are now private unless explicitly made public (see Changed).
+- `OSLogStore` no longer passes caller text to `NSPredicate(format:)`, which read nonexistent varargs and aborted the process on malformed input (see Changed).
 
 ### Fixed
 
@@ -23,10 +23,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Breaking:** `Logger::log`, `trace` through `fault`, the `log` free function, signpost messages and the C shim's `apple_log_emit` / `apple_log_emit_default` log their message as private; pass `Privacy::Public` through `log_with_privacy`, a `*_with_privacy` method or the `*_privacy` shim functions to opt in.
+- **Breaking:** `OSLogStore::get_entries` takes an `OSLogEntryFilter` and a `max_entries` bound instead of `Option<&str>`; raw predicate formats go through `get_entries_with_predicate`.
 - **Breaking:** the `raw-ffi` feature is no longer enabled by default. The raw shim is `unsafe` and trusts callers to pass constant strings where the SDK requires them, so it is now an explicit opt-in: `features = ["raw-ffi"]`.
 - **Breaking:** the compatibility aliases `OSLogStore::entries` (use `get_entries`) and `SignpostId` (use `OSSignpostId`) and the `apple_log::log` compatibility module are removed. `log`, `log_with_privacy` and `log_enabled` now live in `apple_log::logger`, and `active_activity_id`, `active_activity_ids` and `ActivityIds` in `apple_log::os_activity`; they are still re-exported at the crate root and in the prelude.
 - **Breaking:** signpost names are `&'static CStr` in `OSSignposter::emit_event`, `begin_interval`, `begin_animation_interval`, `with_interval_signpost` and the `Logger::signpost_*` helpers; `OSSignposter::end_interval` takes the name from the `OSSignpostInterval`.
 - **Breaking:** `OSActivity::new`, `start`, `initiate`, `initiate_f`, `label_user_action` and `set_breadcrumb` take `&'static CStr`; `initiate` and `initiate_f` return `()`.
+- **Breaking:** the OSAtomic wrappers (`OSAtomicI32`, `OSAtomicI64`, `OSAtomicQueue`, `OSAtomicFifoQueue`) and their raw FFI are removed. They wrapped deprecated APIs, were `!Send`/`!Sync` and freed queue nodes unsafely; use `std::sync::atomic`.
 - `OSActivity` is `Send + Sync`, so `ActivityFuture` is `Send` when its inner future is.
 - `rust-version` is now 1.82.
 - `build.rs` no longer runs `swiftlint`.
@@ -38,7 +41,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-- **Breaking:** the OSAtomic wrappers (`OSAtomicI32`, `OSAtomicI64`, `OSAtomicQueue`, `OSAtomicFifoQueue`) and their raw FFI. They wrapped deprecated APIs, were `!Send`/`!Sync` and freed queue nodes unsafely; use `std::sync::atomic`.
 - The unused duplicate C shim `src/c-shim/apple_log_shim.c`.
 
 ## [0.6.0] - 2026-05-20
