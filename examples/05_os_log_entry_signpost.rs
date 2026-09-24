@@ -12,7 +12,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     std::thread::sleep(Duration::from_millis(100));
 
     let store = OSLogStore::new(OSLogStoreScope::CurrentProcessIdentifier)?;
-    let entries = store.entries(
+    let entries = store.get_entries(
         OSLogEnumeratorOptions::REVERSE,
         Some(&store.position_time_interval_since_end(Duration::from_secs(5))),
         &OSLogEntryFilter::default(),

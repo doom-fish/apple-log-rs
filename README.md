@@ -47,7 +47,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     activity.apply(|| Logger::default().info("inside activity"));
 
     let store = OSLogStore::new(OSLogStoreScope::CurrentProcessIdentifier)?;
-    let entries = store.entries(
+    let entries = store.get_entries(
         OSLogEnumeratorOptions::REVERSE,
         Some(&store.position_time_interval_since_end(Duration::from_secs(5))),
         &OSLogEntryFilter::default()
@@ -92,7 +92,7 @@ fail with a permission error for users who are not administrators.
 
 ## Areas and modules
 
-- `apple_log::logger::Logger` and compatibility free functions in `apple_log::log`
+- `apple_log::logger::Logger` and the `log`, `log_with_privacy` and `log_enabled` free functions for the default log
 - `apple_log::os_log::OSLog`
 - `apple_log::os_log_store::{OSLogStore, OSLogEntryFilter, OSLogPosition, OSLogStoreEntry}`
 - `apple_log::os_log_entry_*` typed entry wrappers

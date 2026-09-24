@@ -7,7 +7,6 @@
 pub mod async_api;
 pub mod error;
 pub mod ffi;
-pub mod log;
 pub mod logger;
 pub mod os_activity;
 pub mod os_log;
@@ -22,11 +21,11 @@ pub mod os_signposter;
 mod bridge_support;
 
 pub use error::LogError;
-pub use log::{
-    active_activity_id, active_activity_ids, log, log_enabled, log_with_privacy, ActivityIds,
+pub use logger::{log, log_enabled, log_with_privacy, Logger, Privacy};
+pub use os_activity::{
+    active_activity_id, active_activity_ids, ActivityIds, OSActivity, OSActivityFlags,
+    OSActivityScope,
 };
-pub use logger::{Logger, Privacy};
-pub use os_activity::{OSActivity, OSActivityFlags, OSActivityScope};
 pub use os_log::{
     Level, OSLog, CATEGORY_DYNAMIC_STACK_TRACING, CATEGORY_DYNAMIC_TRACING,
     CATEGORY_POINTS_OF_INTEREST,
@@ -41,17 +40,17 @@ pub use os_log_store::{
     OSLogMessageComponent, OSLogPosition, OSLogStore, OSLogStoreCategory, OSLogStoreEntry,
     OSLogStoreScope,
 };
-pub use os_signpost_id::{OSSignpostId, SignpostId};
+pub use os_signpost_id::OSSignpostId;
 pub use os_signposter::{OSSignpostInterval, OSSignposter};
 
 /// Common imports.
 pub mod prelude {
     pub use crate::error::LogError;
-    pub use crate::log::{
-        active_activity_id, active_activity_ids, log, log_enabled, log_with_privacy, ActivityIds,
+    pub use crate::logger::{log, log_enabled, log_with_privacy, Logger, Privacy};
+    pub use crate::os_activity::{
+        active_activity_id, active_activity_ids, ActivityIds, OSActivity, OSActivityFlags,
+        OSActivityScope,
     };
-    pub use crate::logger::{Logger, Privacy};
-    pub use crate::os_activity::{OSActivity, OSActivityFlags, OSActivityScope};
     pub use crate::os_log::{
         Level, OSLog, CATEGORY_DYNAMIC_STACK_TRACING, CATEGORY_DYNAMIC_TRACING,
         CATEGORY_POINTS_OF_INTEREST,
@@ -66,6 +65,6 @@ pub mod prelude {
         OSLogMessageComponent, OSLogPosition, OSLogStore, OSLogStoreCategory, OSLogStoreEntry,
         OSLogStoreScope,
     };
-    pub use crate::os_signpost_id::{OSSignpostId, SignpostId};
+    pub use crate::os_signpost_id::OSSignpostId;
     pub use crate::os_signposter::{OSSignpostInterval, OSSignposter};
 }

@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **Breaking:** the `raw-ffi` feature is no longer enabled by default. The raw shim is `unsafe` and trusts callers to pass constant strings where the SDK requires them, so it is now an explicit opt-in: `features = ["raw-ffi"]`.
+- **Breaking:** the compatibility aliases `OSLogStore::entries` (use `get_entries`) and `SignpostId` (use `OSSignpostId`) and the `apple_log::log` compatibility module are removed. `log`, `log_with_privacy` and `log_enabled` now live in `apple_log::logger`, and `active_activity_id`, `active_activity_ids` and `ActivityIds` in `apple_log::os_activity`; they are still re-exported at the crate root and in the prelude.
 - **Breaking:** signpost names are `&'static CStr` in `OSSignposter::emit_event`, `begin_interval`, `begin_animation_interval`, `with_interval_signpost` and the `Logger::signpost_*` helpers; `OSSignposter::end_interval` takes the name from the `OSSignpostInterval`.
 - **Breaking:** `OSActivity::new`, `start`, `initiate`, `initiate_f`, `label_user_action` and `set_breadcrumb` take `&'static CStr`; `initiate` and `initiate_f` return `()`.
 - `OSActivity` is `Send + Sync`, so `ActivityFuture` is `Send` when its inner future is.

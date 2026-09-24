@@ -6,7 +6,7 @@ use apple_log::prelude::*;
 fn os_log_entry_boundary_accessors() {
     let store = OSLogStore::new(OSLogStoreScope::CurrentProcessIdentifier).expect("store");
     let entries = store
-        .entries(
+        .get_entries(
             OSLogEnumeratorOptions::REVERSE,
             Some(&store.position_time_interval_since_end(Duration::from_secs(5))),
             &OSLogEntryFilter::default(),

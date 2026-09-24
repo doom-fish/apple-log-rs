@@ -603,21 +603,6 @@ impl OSLogStore {
         };
         Ok(list.into_entries())
     }
-
-    /// Alias for `get_entries`.
-    ///
-    /// # Errors
-    ///
-    /// Returns the same errors as `get_entries`.
-    pub fn entries(
-        &self,
-        options: OSLogEnumeratorOptions,
-        position: Option<&OSLogPosition>,
-        filter: &OSLogEntryFilter,
-        max_entries: usize,
-    ) -> Result<Vec<OSLogStoreEntry>, LogError> {
-        self.get_entries(options, position, filter, max_entries)
-    }
 }
 
 impl Drop for OSLogStore {

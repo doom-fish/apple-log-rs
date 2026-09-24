@@ -5,9 +5,6 @@ use crate::os_log::OSLog;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct OSSignpostId(u64);
 
-/// Backwards-compatible alias for the pre-v0.5 signpost type.
-pub type SignpostId = OSSignpostId;
-
 impl OSSignpostId {
     pub const NULL: Self = Self(ffi::signpost_id::NULL);
     pub const INVALID: Self = Self(ffi::signpost_id::INVALID);

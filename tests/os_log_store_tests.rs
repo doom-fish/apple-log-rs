@@ -12,7 +12,7 @@ fn os_log_store_smoke() {
     let store = OSLogStore::new(OSLogStoreScope::CurrentProcessIdentifier).expect("store");
     let position = store.position_time_interval_since_end(Duration::from_secs(5));
     let entries = store
-        .entries(
+        .get_entries(
             OSLogEnumeratorOptions::REVERSE,
             Some(&position),
             &OSLogEntryFilter::default(),

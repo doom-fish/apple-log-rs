@@ -91,7 +91,7 @@ fn activity_symbols_present_in_header() {
 #[test]
 fn rust_constants_match_apple_values() {
     use apple_log::{
-        Level, OSActivity, SignpostId, CATEGORY_DYNAMIC_STACK_TRACING, CATEGORY_DYNAMIC_TRACING,
+        Level, OSActivity, OSSignpostId, CATEGORY_DYNAMIC_STACK_TRACING, CATEGORY_DYNAMIC_TRACING,
         CATEGORY_POINTS_OF_INTEREST,
     };
 
@@ -101,9 +101,9 @@ fn rust_constants_match_apple_values() {
     assert_eq!(Level::Error as i32, 0x10);
     assert_eq!(Level::Fault as i32, 0x11);
 
-    assert_eq!(SignpostId::NULL.as_u64(), 0);
-    assert_eq!(SignpostId::INVALID.as_u64(), u64::MAX);
-    assert_eq!(SignpostId::EXCLUSIVE.as_u64(), 0xEEEE_B0B5_B2B2_EEEE);
+    assert_eq!(OSSignpostId::NULL.as_u64(), 0);
+    assert_eq!(OSSignpostId::INVALID.as_u64(), u64::MAX);
+    assert_eq!(OSSignpostId::EXCLUSIVE.as_u64(), 0xEEEE_B0B5_B2B2_EEEE);
 
     assert_eq!(CATEGORY_POINTS_OF_INTEREST, "PointsOfInterest");
     assert_eq!(CATEGORY_DYNAMIC_TRACING, "DynamicTracing");
