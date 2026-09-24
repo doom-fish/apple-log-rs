@@ -102,14 +102,14 @@ fail with a permission error for users who are not administrators.
 
 ## Raw C FFI
 
-The crate keeps the low-level C shim behind the `raw-ffi` feature. The feature is enabled by default for backwards compatibility.
+The crate keeps the low-level C shim behind the opt-in `raw-ffi` feature. Enable it when
+you want direct access to the wrapped C symbols under `apple_log::ffi`; they are
+`unsafe` and trust the caller to pass constant strings where the SDK requires them.
 
 ```toml
 [dependencies]
-apple-log = { version = "0.7", default-features = false }
+apple-log = { version = "0.7", features = ["raw-ffi"] }
 ```
-
-Enable `raw-ffi` when you want direct access to the wrapped C symbols under `apple_log::ffi`.
 
 ## Async activity instrumentation
 

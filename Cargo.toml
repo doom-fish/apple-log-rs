@@ -27,7 +27,7 @@ include = [
 ]
 
 [features]
-default = ["raw-ffi"]
+default = []
 raw-ffi = []
 async = []
 
