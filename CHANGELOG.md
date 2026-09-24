@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Entry dates never panic: invalid values map to `UNIX_EPOCH`, and dates before 1970 are supported.
 - The OSLogStore bridge no longer uses trapping integer conversions on framework values.
 - The `log`, `log_with_privacy` and `log_enabled` free functions no longer allocate a Swift `Logger` on every call.
+- `build.rs` no longer adds the toolchain's Swift 5.5 back-deployment directory (`usr/lib/swift-5.5/macosx`) to the rpath. The path points into Xcode, so it never made the back-deployment concurrency library available on other machines.
 
 ### Changed
 

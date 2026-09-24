@@ -68,14 +68,10 @@ fn link_swift_bridge(swift_build_dir: &str) {
     match Command::new("xcode-select").arg("-p").output() {
         Ok(output) if output.status.success() => {
             let xcode_path = String::from_utf8_lossy(&output.stdout).trim().to_string();
-            let legacy = format!(
-                "{xcode_path}/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift-5.5/macosx"
-            );
-            println!("cargo:rustc-link-arg=-Wl,-rpath,{legacy}");
-            let current =
+            let swift_lib_path =
                 format!("{xcode_path}/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx");
-            println!("cargo:rustc-link-arg=-Wl,-rpath,{current}");
-            println!("cargo:rustc-link-search=native={current}");
+            println!("cargo:rustc-link-arg=-Wl,-rpath,{swift_lib_path}");
+            println!("cargo:rustc-link-search=native={swift_lib_path}");
             for compatibility_lib in [
                 "swiftCompatibility50",
                 "swiftCompatibility51",
