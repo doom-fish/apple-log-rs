@@ -109,6 +109,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - README status/roadmap now matches the shipped `os_log` / `os_signpost` / `os_activity` surface.
 - API coverage tests now verify signpost and activity header symbols in addition to base logging macros.
 
+## [0.3.0] - 2026-05-16
+
+### Added
+
+- Add `active_activity_id()` for `os_activity` correlation.
+
+## [0.2.0] - 2026-05-16
+
+### Added
+
+- Add `os_signpost` and `os_log_type_enabled` support.
+
 ## [0.1.0] - Initial release
 
 ### Added
